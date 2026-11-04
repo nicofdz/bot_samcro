@@ -402,9 +402,18 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Modal Cambiar Contraseña */}
-      {mostrarPasswordModal && (
-        <CambiarPasswordModal onClose={() => setMostrarPasswordModal(false)} />
+      {/* Modal Cambiar Contraseña (Obligatorio en primer ingreso o voluntario) */}
+      {(mostrarPasswordModal || Boolean(user?.debe_cambiar_password)) && (
+        <CambiarPasswordModal
+          obligatorio={Boolean(user?.debe_cambiar_password)}
+          username={user.username}
+          onClose={() => setMostrarPasswordModal(false)}
+          onSuccess={() => {
+            setUser({ ...user, debe_cambiar_password: false });
+            setMostrarPasswordModal(false);
+          }}
+          onLogout={handleLogout}
+        />
       )}
     </div>
   );

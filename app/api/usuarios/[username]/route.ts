@@ -26,7 +26,7 @@ export async function PUT(
     if (password && password.trim()) {
       const passwordHash = hashPassword(password.trim());
       await query(
-        "UPDATE usuarios SET rol = $1, permisos = $2, password_hash = $3 WHERE username = $4",
+        "UPDATE usuarios SET rol = $1, permisos = $2, password_hash = $3, debe_cambiar_password = 1 WHERE username = $4",
         [rol, JSON.stringify(permisos), passwordHash, username]
       );
     } else {
