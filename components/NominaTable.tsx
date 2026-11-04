@@ -30,18 +30,19 @@ export function NominaTable({
   onTogglePagado,
 }: NominaTableProps) {
   const [busqueda, setBusqueda] = useState("");
-  const [actualizando, setActualizando] = useState<string | null>(null);
+  const [guardando, setGuardando] = useState<Record<string, boolean>>({});
 
   const filtrados = trabajadores.filter((t) =>
     t.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
   const handleCheckboxClick = async (nombre: string, estadoActual: boolean) => {
-    setActualizando(nombre);
+    if (guardando[nombre]) return;
+    setGuardando((prev) => ({ ...prev, [nombre]: true }));
     try {
       await onTogglePagado(nombre, !estadoActual);
     } finally {
-      setActualizando(null);
+      setGuardando((prev) => ({ ...prev, [nombre]: false }));
     }
   };
 
@@ -108,7 +109,7 @@ export function NominaTable({
               filtrados.map((t) => {
                 const tienePago = t.total > 0;
                 const estaPagado = t.pagado;
-                const isUpdating = actualizando === t.nombre;
+                const isUpdating = Boolean(guardando[t.nombre]);
 
                 return (
                   <tr
@@ -210,16 +211,22 @@ export function NominaTable({
                               : "bg-black/60 text-slate-400 border border-white/10 hover:border-amber-500/40 hover:text-amber-300"
                           }`}
                         >
-                          {isUpdating ? (
-                            <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          ) : estaPagado ? (
+                          {estaPagado ? (
                             <>
-                              <FontAwesomeIcon icon={faCheck} className="h-3 w-3 text-emerald-400" />
+                              {isUpdating ? (
+                                <div className="h-3 w-3 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+                              ) : (
+                                <FontAwesomeIcon icon={faCheck} className="h-3 w-3 text-emerald-400" />
+                              )}
                               <span>Pagado</span>
                             </>
                           ) : (
                             <>
-                              <FontAwesomeIcon icon={faHourglassHalf} className="h-2.5 w-2.5 text-amber-400/90" />
+                              {isUpdating ? (
+                                <div className="h-3 w-3 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
+                              ) : (
+                                <FontAwesomeIcon icon={faHourglassHalf} className="h-2.5 w-2.5 text-amber-400/90" />
+                              )}
                               <span>Pendiente</span>
                             </>
                           )}

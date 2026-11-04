@@ -166,7 +166,7 @@ export default function DashboardPage() {
     return trabajadoresActuales;
   }, [tabActiva, trabajadoresConsolidados, trabajadoresActuales]);
 
-  // Manejador de checklist de pago
+  // Manejador de checklist de pago optimista e instantáneo
   const handleTogglePagado = async (nombre: string, nuevoEstado: boolean) => {
     const seccionesAfectadas =
       tabActiva === "consolidado"
@@ -176,15 +176,51 @@ export default function DashboardPage() {
           })
         : [tabActiva];
 
-    for (const s of seccionesAfectadas) {
-      await fetch("/api/nomina/marcar-pagado", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seccion: s, nombre, pagado: nuevoEstado, offset }),
-      });
-    }
+    // 1. Actualización optimista inmediata en memoria (0ms, sin recargar toda la tabla)
+    setDatosNomina((prev) => {
+      const next = { ...prev };
+      for (const s of seccionesAfectadas) {
+        if (Array.isArray(next[s])) {
+          next[s] = next[s].map((t: TrabajadorNomina) =>
+            t.nombre === nombre ? { ...t, pagado: nuevoEstado } : t
+          );
+        }
+      }
+      return next;
+    });
 
-    cargarNomina();
+    // 2. Guardar en segundo plano en la base de datos en paralelo
+    try {
+      await Promise.all(
+        seccionesAfectadas.map((s) =>
+          fetch("/api/nomina/marcar-pagado", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ seccion: s, nombre, pagado: nuevoEstado, offset }),
+          }).then(async (res) => {
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.error || "Error al actualizar estado");
+            }
+          })
+        )
+      );
+    } catch (error: any) {
+      console.error("Error al actualizar pago:", error);
+      // Revertir estado si falló la conexión
+      setDatosNomina((prev) => {
+        const next = { ...prev };
+        for (const s of seccionesAfectadas) {
+          if (Array.isArray(next[s])) {
+            next[s] = next[s].map((t: TrabajadorNomina) =>
+              t.nombre === nombre ? { ...t, pagado: !nuevoEstado } : t
+            );
+          }
+        }
+        return next;
+      });
+      alert(`No se pudo actualizar el pago de ${nombre}. Revisa tu conexión.`);
+    }
   };
 
   // Manejador de logout
