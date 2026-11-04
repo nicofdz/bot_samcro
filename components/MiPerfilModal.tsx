@@ -15,6 +15,7 @@ import {
   faKey,
   faAt,
   faIdCard,
+  faEye,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface MiPerfilModalProps {
@@ -54,7 +55,6 @@ function optimizarImagen(file: File): Promise<string> {
         if (!ctx) return reject(new Error("No se pudo inicializar canvas"));
 
         ctx.drawImage(img, 0, 0, width, height);
-        // Generar base64 WebP optimizado
         resolve(canvas.toDataURL("image/webp", 0.85));
       };
       img.onerror = () => reject(new Error("No se pudo cargar la imagen"));
@@ -76,6 +76,7 @@ export function MiPerfilModal({
   const [avatarUrl, setAvatarUrl] = useState<string | null>(user.avatar_url || null);
   const [procesandoImg, setProcesandoImg] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [fotoAmpliada, setFotoAmpliada] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mensajeExito, setMensajeExito] = useState<string | null>(null);
 
@@ -175,9 +176,29 @@ export function MiPerfilModal({
         <form onSubmit={handleGuardar} className="mt-5 space-y-5">
           {/* Avatar / Foto de Perfil */}
           <div className="flex flex-col sm:flex-row items-center gap-4 rounded-xl border border-white/5 bg-black/40 p-4">
-            <div className="relative group flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-amber-500/40 bg-gradient-to-br from-amber-600/30 to-black shadow-xl">
+            {/* Foto circular con clic para ampliar */}
+            <div
+              onClick={() => {
+                if (avatarUrl) setFotoAmpliada(true);
+              }}
+              title={avatarUrl ? "Clic para ver foto en tamaño completo" : "Sin foto de perfil"}
+              className={`relative group flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-amber-500/40 bg-gradient-to-br from-amber-600/30 to-black shadow-xl transition-all ${
+                avatarUrl
+                  ? "cursor-pointer hover:scale-105 hover:border-amber-400 shadow-amber-500/10"
+                  : ""
+              }`}
+            >
               {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+                <>
+                  <img
+                    src={avatarUrl}
+                    alt="Avatar"
+                    className="h-full w-full object-cover transition duration-200 group-hover:brightness-110"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <FontAwesomeIcon icon={faEye} className="h-5 w-5 text-amber-300 drop-shadow" />
+                  </div>
+                </>
               ) : (
                 <span className="text-2xl font-black text-amber-300">
                   {(nombre || username).slice(0, 2).toUpperCase()}
@@ -185,7 +206,7 @@ export function MiPerfilModal({
               )}
 
               {procesandoImg && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/70">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-10">
                   <FontAwesomeIcon icon={faCircleNotch} className="h-5 w-5 text-amber-400 animate-spin" />
                 </div>
               )}
@@ -193,8 +214,13 @@ export function MiPerfilModal({
 
             <div className="flex flex-col items-center sm:items-start gap-2 flex-1 text-center sm:text-left">
               <div>
-                <p className="text-xs font-black text-slate-200 uppercase tracking-wide">
-                  Foto de Perfil
+                <p className="text-xs font-black text-slate-200 uppercase tracking-wide flex items-center gap-2 justify-center sm:justify-start">
+                  <span>Foto de Perfil</span>
+                  {avatarUrl && (
+                    <span className="text-[10px] font-bold text-amber-400/90 lowercase">
+                      (clic en la foto para ampliar)
+                    </span>
+                  )}
                 </p>
                 <p className="text-[10px] text-slate-400 font-medium mt-0.5">
                   Formatos JPG, PNG o WebP. Se ajusta automáticamente a 256x256 px.
@@ -220,14 +246,25 @@ export function MiPerfilModal({
                 </button>
 
                 {avatarUrl && (
-                  <button
-                    type="button"
-                    onClick={handleEliminarFoto}
-                    className="flex items-center gap-1.5 rounded-xl border border-red-500/20 bg-red-950/30 px-3 py-1.5 text-xs font-bold text-red-400 hover:bg-red-900/40 transition cursor-pointer"
-                  >
-                    <FontAwesomeIcon icon={faTrashCan} className="h-3 w-3" />
-                    <span>Quitar</span>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setFotoAmpliada(true)}
+                      className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-slate-800/80 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-700 hover:text-white transition cursor-pointer"
+                      title="Ver foto en grande"
+                    >
+                      <FontAwesomeIcon icon={faEye} className="h-3 w-3 text-amber-400" />
+                      <span>Ver Grande</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleEliminarFoto}
+                      className="flex items-center gap-1.5 rounded-xl border border-red-500/20 bg-red-950/30 px-3 py-1.5 text-xs font-bold text-red-400 hover:bg-red-900/40 transition cursor-pointer"
+                    >
+                      <FontAwesomeIcon icon={faTrashCan} className="h-3 w-3" />
+                      <span>Quitar</span>
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -377,7 +414,43 @@ export function MiPerfilModal({
           </div>
         </form>
       </div>
+
+      {/* Visor de Foto de Perfil Ampliada */}
+      {fotoAmpliada && avatarUrl && (
+        <div
+          className="fixed inset-0 z-80 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md"
+          onClick={() => setFotoAmpliada(false)}
+        >
+          <div
+            className="samcro-panel relative max-h-[90vh] max-w-lg overflow-hidden rounded-3xl border border-amber-500/40 p-4 shadow-2xl flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex w-full items-center justify-between pb-3 border-b border-white/10 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-400">
+                  Foto de Perfil
+                </span>
+                <span className="text-xs text-slate-300 font-bold">&bull; {nombre || username}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFotoAmpliada(false)}
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              >
+                <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-black flex items-center justify-center p-2">
+              <img
+                src={avatarUrl}
+                alt={nombre || username}
+                className="max-h-[70vh] w-auto max-w-full rounded-xl object-contain shadow-2xl"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
