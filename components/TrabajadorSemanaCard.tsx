@@ -16,6 +16,7 @@ import {
   faEye,
   faCircleNotch,
   faChevronRight,
+  faCircleInfo,
 } from "@fortawesome/free-solid-svg-icons";
 import { ResumenTrabajadorSemana, MiembroRankingSemana } from "@/lib/trabajadorSemana";
 
@@ -280,14 +281,26 @@ export function TrabajadorSemanaCard({ offset, onVerDetalles }: TrabajadorSemana
                   </div>
 
                   {/* Puntuación */}
-                  <div className="rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-transparent p-3 text-center sm:text-left">
+                  <div
+                    className="relative group rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-transparent p-3 text-center sm:text-left cursor-help"
+                    title="Fórmula: (Horas × 100) + (Ventas ÷ 100) + (Trabajos × 50)"
+                  >
                     <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-400 mb-1">
                       <FontAwesomeIcon icon={faTrophy} className="h-3 w-3 text-amber-300" />
                       <span>Puntaje</span>
+                      <FontAwesomeIcon icon={faCircleInfo} className="h-2.5 w-2.5 text-amber-400/60 ml-auto hidden sm:inline" />
                     </div>
                     <div className="text-base sm:text-lg font-black text-amber-300">
                       {campeon.puntos.toLocaleString("es-CL")}{" "}
                       <span className="text-xs font-semibold text-amber-500/80">pts</span>
+                    </div>
+
+                    {/* Tooltip explicativo al pasar el cursor */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:flex flex-col gap-1 w-52 rounded-xl bg-black/95 p-2.5 text-left text-[10px] text-slate-200 border border-amber-500/40 shadow-2xl z-20 pointer-events-none">
+                      <span className="font-black text-amber-400 uppercase">¿Cómo se calcula?</span>
+                      <span>&bull; <strong>1 hr turno</strong> = 100 pts</span>
+                      <span>&bull; <strong>$1.000 ventas</strong> = 10 pts</span>
+                      <span>&bull; <strong>1 trabajo</strong> = 50 pts</span>
                     </div>
                   </div>
                 </div>
@@ -364,3 +377,4 @@ export function TrabajadorSemanaCard({ offset, onVerDetalles }: TrabajadorSemana
     </>
   );
 }
+
