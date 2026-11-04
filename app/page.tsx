@@ -351,9 +351,7 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
           <span className="font-black text-amber-500/80 tracking-wider">SAMCRO MOTORCYCLE CLUB</span>
           <span className="hidden sm:inline">&bull;</span>
-          <span>Redwood Original 1967 &bull; Nómina & Control v3</span>
-          <span className="hidden sm:inline">&bull;</span>
-          <span className="text-slate-600">Desplegado en Vercel</span>
+          <span>Nómina & Control v3</span>
         </div>
       </footer>
 
