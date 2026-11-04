@@ -7,25 +7,33 @@ import {
   faUsers,
   faUserPlus,
   faTrashCan,
-  faLock,
   faCircleNotch,
   faEye,
   faXmark,
-  faUser,
+  faLink,
+  faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface Usuario {
   username: string;
   nombre?: string | null;
   avatar_url?: string | null;
-  rol: "superadmin" | "jefe";
+  rol: "superadmin" | "jefe" | "trabajador";
   permisos: string[];
   debe_cambiar_password: boolean;
+  discord_id?: string | null;
   creado_en: string;
+}
+
+interface CanalTrabajador {
+  discord_id: string;
+  nombre: string;
+  canal_id?: string | null;
 }
 
 export function AdminUsuariosView() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [canales, setCanales] = useState<CanalTrabajador[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,17 +43,29 @@ export function AdminUsuariosView() {
   // Formulario nuevo usuario
   const [nuevoUsername, setNuevoUsername] = useState("");
   const [nuevoPassword, setNuevoPassword] = useState("");
-  const [nuevoRol, setNuevoRol] = useState<"jefe" | "superadmin">("jefe");
+  const [nuevoNombre, setNuevoNombre] = useState("");
+  const [nuevoDiscordId, setNuevoDiscordId] = useState("");
+  const [nuevoRol, setNuevoRol] = useState<"trabajador" | "jefe" | "superadmin">("trabajador");
   const [nuevosPermisos, setNuevosPermisos] = useState<string[]>(["mecanica"]);
+  const [canalSeleccionado, setCanalSeleccionado] = useState<string>("");
   const [guardando, setGuardando] = useState(false);
 
-  const cargarUsuarios = async () => {
+  const cargarDatos = async () => {
     setCargando(true);
     try {
-      const res = await fetch("/api/usuarios");
-      if (!res.ok) throw new Error("No se pudieron cargar los usuarios");
-      const data = await res.json();
-      setUsuarios(data);
+      const [resUsers, resCanales] = await Promise.all([
+        fetch("/api/usuarios"),
+        fetch("/api/trabajadores-canales"),
+      ]);
+
+      if (!resUsers.ok) throw new Error("No se pudieron cargar los usuarios");
+      const dataUsers = await resUsers.json();
+      setUsuarios(dataUsers);
+
+      if (resCanales.ok) {
+        const dataCanales = await resCanales.json();
+        setCanales(dataCanales);
+      }
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -54,13 +74,40 @@ export function AdminUsuariosView() {
   };
 
   useEffect(() => {
-    cargarUsuarios();
+    cargarDatos();
   }, []);
 
   const handleTogglePermiso = (permiso: string) => {
     setNuevosPermisos((prev) =>
       prev.includes(permiso) ? prev.filter((p) => p !== permiso) : [...prev, permiso]
     );
+  };
+
+  const handleSelectCanal = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setCanalSeleccionado(val);
+    if (!val) {
+      setNuevoNombre("");
+      setNuevoDiscordId("");
+      return;
+    }
+
+    const c = canales.find((item) => item.discord_id === val);
+    if (c) {
+      setNuevoNombre(c.nombre);
+      setNuevoDiscordId(c.discord_id);
+      // Sugerir username formateado si está vacío
+      if (!nuevoUsername.trim()) {
+        const userSlug = c.nombre
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]/g, "_")
+          .replace(/_+/g, "_")
+          .slice(0, 20);
+        setNuevoUsername(userSlug);
+      }
+    }
   };
 
   const handleCrearUsuario = async (e: React.FormEvent) => {
@@ -78,6 +125,8 @@ export function AdminUsuariosView() {
           password: nuevoPassword,
           rol: nuevoRol,
           permisos: nuevosPermisos,
+          nombre: nuevoNombre.trim() || null,
+          discord_id: nuevoDiscordId.trim() || null,
         }),
       });
 
@@ -88,8 +137,12 @@ export function AdminUsuariosView() {
 
       setNuevoUsername("");
       setNuevoPassword("");
+      setNuevoNombre("");
+      setNuevoDiscordId("");
+      setCanalSeleccionado("");
+      setNuevoRol("trabajador");
       setNuevosPermisos(["mecanica"]);
-      cargarUsuarios();
+      cargarDatos();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -105,7 +158,7 @@ export function AdminUsuariosView() {
         method: "DELETE",
       });
       if (res.ok) {
-        cargarUsuarios();
+        cargarDatos();
       } else {
         const d = await res.json();
         alert(d.error || "Error al eliminar usuario");
@@ -129,7 +182,7 @@ export function AdminUsuariosView() {
           Administración de Cuentas y Accesos
         </h2>
         <p className="text-xs text-slate-400 font-medium">
-          Crea accesos para jefes de área, asigna permisos o gestiona credenciales de la directiva
+          Crea accesos para trabajadores y directiva vinculándolos con sus canales de Discord para no duplicar datos
         </p>
       </div>
 
@@ -138,20 +191,56 @@ export function AdminUsuariosView() {
         <div className="samcro-card col-span-1 rounded-2xl border border-white/10 p-5 shadow-xl">
           <h3 className="text-sm font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
             <FontAwesomeIcon icon={faUserPlus} className="h-3.5 w-3.5" />
-            Crear Acceso de Jefatura
+            Crear Acceso al Sistema
           </h3>
 
           <form onSubmit={handleCrearUsuario} className="mt-4 space-y-4">
+            {/* Selector de Miembro de Discord para Cero Duplicidad */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5 mb-1">
+                <FontAwesomeIcon icon={faLink} className="h-3 w-3" />
+                <span>Vincular a Miembro de Discord (Sin duplicar)</span>
+              </label>
+              <select
+                value={canalSeleccionado}
+                onChange={handleSelectCanal}
+                className="w-full rounded-xl border border-amber-500/30 bg-black/70 px-3 py-2 text-xs font-semibold text-amber-300 outline-none transition focus:border-amber-500"
+              >
+                <option value="">— Seleccionar miembro de la lista ({canales.length} registrados) —</option>
+                {canales.map((c) => (
+                  <option key={c.discord_id} value={c.discord_id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Al seleccionar un miembro, sus turnos y ventas web quedarán en su misma bitácora de Discord.
+              </p>
+            </div>
+
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                Usuario
+                Nombre de Personaje / Trabajador
+              </label>
+              <input
+                type="text"
+                value={nuevoNombre}
+                onChange={(e) => setNuevoNombre(e.target.value)}
+                placeholder="Ej. Ashley Miller"
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-xs font-semibold text-slate-200 outline-none transition focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                Nombre de Usuario (Login)
               </label>
               <input
                 type="text"
                 required
                 value={nuevoUsername}
                 onChange={(e) => setNuevoUsername(e.target.value)}
-                placeholder="Ej. KIMBO"
+                placeholder="Ej. ashley_miller"
                 className="mt-1 w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-xs font-semibold text-slate-200 outline-none transition focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"
               />
             </div>
@@ -168,6 +257,9 @@ export function AdminUsuariosView() {
                 placeholder="••••••••"
                 className="mt-1 w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-xs font-semibold text-slate-200 outline-none transition focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"
               />
+              <p className="text-[10px] text-slate-500 mt-0.5">
+                El sistema obligará a cambiar esta contraseña en el primer inicio de sesión.
+              </p>
             </div>
 
             <div>
@@ -176,9 +268,10 @@ export function AdminUsuariosView() {
               </label>
               <select
                 value={nuevoRol}
-                onChange={(e) => setNuevoRol(e.target.value as "jefe" | "superadmin")}
+                onChange={(e) => setNuevoRol(e.target.value as "trabajador" | "jefe" | "superadmin")}
                 className="mt-1 w-full rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-xs font-semibold text-slate-200 outline-none transition focus:border-amber-500"
               >
+                <option value="trabajador">Trabajador / Miembro (Bitácora Personal)</option>
                 <option value="jefe">Jefe de Área (Oficial)</option>
                 <option value="superadmin">Mesa Directiva (Superadmin)</option>
               </select>
@@ -186,7 +279,7 @@ export function AdminUsuariosView() {
 
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">
-                Permisos de Visualización
+                Permisos de Visualización de Nómina
               </label>
               <div className="space-y-1.5 rounded-xl border border-white/5 bg-black/40 p-3">
                 {listaPermisosOpciones.map((opc) => (
@@ -277,7 +370,7 @@ export function AdminUsuariosView() {
 
                     {/* Información del usuario */}
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-extrabold text-sm text-slate-100">
                           {u.nombre || u.username}
                         </span>
@@ -290,17 +383,25 @@ export function AdminUsuariosView() {
                           className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${
                             u.rol === "superadmin"
                               ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                              : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                              : u.rol === "jefe"
+                              ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                              : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                           }`}
                         >
                           {u.rol}
                         </span>
+                        {u.discord_id && (
+                          <span className="rounded bg-white/5 px-1.5 py-0.5 text-[9px] font-semibold text-slate-400 border border-white/10 flex items-center gap-1">
+                            <FontAwesomeIcon icon={faLink} className="h-2 w-2 text-emerald-400" />
+                            <span>Discord</span>
+                          </span>
+                        )}
                       </div>
 
                       <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-slate-400">
                         <span>Permisos:</span>
                         {u.permisos.length === 0 ? (
-                          <span className="text-slate-600">Ninguno</span>
+                          <span className="text-slate-600">Solo Bitácora Personal</span>
                         ) : (
                           u.permisos.map((p) => (
                             <span

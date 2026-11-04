@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { query, queryOne, ensurePerfilColumns } from "@/lib/db";
+import { query, queryOne, ensurePerfilColumns, isPostgres } from "@/lib/db";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -23,6 +23,7 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const nombre = typeof body.nombre === "string" ? body.nombre.trim() : null;
     const avatar_url = typeof body.avatar_url === "string" ? body.avatar_url : null;
+    const discord_id = typeof body.discord_id === "string" ? body.discord_id.trim() : null;
     const nuevoUsername = typeof body.nuevo_username === "string" ? body.nuevo_username.trim() : user.username;
 
     let usernameFinal = user.username;
@@ -66,20 +67,48 @@ export async function PUT(request: Request) {
       usernameFinal = nuevoUsername;
     }
 
-    // Actualizar nombre y avatar_url
-    await query(
-      "UPDATE usuarios SET nombre = $1, avatar_url = $2 WHERE username = $3",
-      [nombre, avatar_url, usernameFinal]
-    );
+    // Actualizar nombre, avatar_url y discord_id (si se proveyó)
+    if (discord_id) {
+      await query(
+        "UPDATE usuarios SET nombre = $1, avatar_url = $2, discord_id = $3 WHERE username = $4",
+        [nombre, avatar_url, discord_id, usernameFinal]
+      );
+
+      // Sincronizar en canales_trabajador
+      if (nombre) {
+        try {
+          if (isPostgres()) {
+            await query(
+              `INSERT INTO canales_trabajador (discord_id, nombre, canal_id)
+               VALUES ($1, $2, 'web')
+               ON CONFLICT (discord_id) DO UPDATE SET nombre = EXCLUDED.nombre`,
+              [discord_id, nombre]
+            );
+          } else {
+            await query(
+              `INSERT OR REPLACE INTO canales_trabajador (discord_id, nombre, canal_id)
+               VALUES ($1, $2, 'web')`,
+              [discord_id, nombre]
+            );
+          }
+        } catch {}
+      }
+    } else {
+      await query(
+        "UPDATE usuarios SET nombre = $1, avatar_url = $2 WHERE username = $3",
+        [nombre, avatar_url, usernameFinal]
+      );
+    }
 
     const updated = await queryOne<{
       username: string;
       nombre: string | null;
       avatar_url: string | null;
-      rol: "superadmin" | "jefe";
+      rol: "superadmin" | "jefe" | "trabajador";
       permisos: string;
       debe_cambiar_password: number;
-    }>("SELECT username, nombre, avatar_url, rol, permisos, debe_cambiar_password FROM usuarios WHERE username = $1", [
+      discord_id: string | null;
+    }>("SELECT username, nombre, avatar_url, rol, permisos, debe_cambiar_password, discord_id FROM usuarios WHERE username = $1", [
       usernameFinal,
     ]);
 
@@ -101,6 +130,7 @@ export async function PUT(request: Request) {
       rol: updated.rol,
       permisos,
       debe_cambiar_password: Boolean(updated.debe_cambiar_password),
+      discord_id: updated.discord_id || null,
     });
   } catch (error: any) {
     console.error("Error al actualizar perfil en /api/me:", error);

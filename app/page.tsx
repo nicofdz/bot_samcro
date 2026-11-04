@@ -10,6 +10,7 @@ import { NominaTable } from "@/components/NominaTable";
 import { DetallesModal } from "@/components/DetallesModal";
 import { TurnosActivosView } from "@/components/TurnosActivosView";
 import { AdminUsuariosView } from "@/components/AdminUsuariosView";
+import { BitacoraTrabajadorView } from "@/components/BitacoraTrabajadorView";
 import { LoginModal } from "@/components/LoginModal";
 import { CambiarPasswordModal } from "@/components/CambiarPasswordModal";
 import { MiPerfilModal } from "@/components/MiPerfilModal";
@@ -25,6 +26,7 @@ import {
   faGear,
   faCircleNotch,
   faGem,
+  faClipboardList,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Mapeo de iconos Font Awesome por sección
@@ -35,6 +37,7 @@ const ICONOS_SECCION: Record<string, any> = {
   tatuajes: faPenNib,
   show: faMusic,
   coleccionables: faGem,
+  bitacora: faClipboardList,
   turnos: faTowerBroadcast,
   admin: faGear,
 };
@@ -68,9 +71,11 @@ export default function DashboardPage() {
       try {
         const res = await fetch("/api/me");
         if (res.ok) {
-          const u = await res.json();
+          const u: UserSession = await res.json();
           setUser(u);
-          if (u.rol !== "superadmin" && !u.permisos.includes("consolidado")) {
+          if (u.rol === "trabajador") {
+            setTabActiva("bitacora");
+          } else if (u.rol !== "superadmin" && !u.permisos.includes("consolidado")) {
             const primerPermiso = Object.keys(SECCIONES).find((s) => u.permisos.includes(s));
             if (primerPermiso) setTabActiva(primerPermiso);
           }
@@ -162,7 +167,7 @@ export default function DashboardPage() {
 
   // Lista de trabajadores para las métricas superiores
   const trabajadoresKpis = useMemo<TrabajadorNomina[]>(() => {
-    if (tabActiva === "turnos" || tabActiva === "admin" || tabActiva === "consolidado") {
+    if (tabActiva === "turnos" || tabActiva === "admin" || tabActiva === "bitacora" || tabActiva === "consolidado") {
       return trabajadoresConsolidados;
     }
     return trabajadoresActuales;
@@ -252,12 +257,18 @@ export default function DashboardPage() {
 
   // Lista de tabs permitidas para este usuario (con iconos Font Awesome)
   const tabsDisponibles = [
+    ...(user.rol === "trabajador"
+      ? [{ key: "bitacora", label: "Mi Bitácora", icon: ICONOS_SECCION.bitacora }]
+      : []),
     ...(user.rol === "superadmin" || user.permisos.includes("consolidado")
       ? [{ key: "consolidado", label: "Consolidado", icon: ICONOS_SECCION.consolidado }]
       : []),
     ...Object.entries(SECCIONES)
       .filter(([k]) => user.rol === "superadmin" || user.permisos.includes("consolidado") || user.permisos.includes(k))
       .map(([k, v]) => ({ key: k, label: v.nombre_visible, icon: ICONOS_SECCION[k] || faWrench })),
+    ...(user.rol !== "trabajador"
+      ? [{ key: "bitacora", label: "Mi Bitácora", icon: ICONOS_SECCION.bitacora }]
+      : []),
     {
       key: "turnos",
       label: `Turnos en Vivo (${turnosActivos.length})`,
@@ -342,7 +353,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Vista según la pestaña activa */}
-        {tabActiva === "turnos" ? (
+        {tabActiva === "bitacora" ? (
+          <BitacoraTrabajadorView
+            user={user}
+            offset={offset}
+            onActualizacion={() => cargarNomina()}
+          />
+        ) : tabActiva === "turnos" ? (
           <TurnosActivosView
             turnos={turnosActivos}
             onTurnoFinalizado={() => cargarNomina()}

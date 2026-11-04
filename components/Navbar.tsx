@@ -119,7 +119,7 @@ export function Navbar({
                 <span>@{user.username}</span>
                 <span>&bull;</span>
                 <span className="text-amber-400/90 font-bold">
-                  {user.rol === "superadmin" ? "Mesa Directiva" : "Oficial"}
+                  {user.rol === "superadmin" ? "Mesa Directiva" : user.rol === "jefe" ? "Oficial" : "Miembro"}
                 </span>
               </div>
             </div>

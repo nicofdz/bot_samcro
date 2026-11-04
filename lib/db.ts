@@ -116,6 +116,28 @@ export async function ensurePerfilColumns(): Promise<void> {
       await query(`
         ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nombre TEXT;
         ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+        ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS discord_id TEXT;
+        CREATE TABLE IF NOT EXISTS canales_trabajador (
+          discord_id TEXT PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          canal_id TEXT
+        );
+        CREATE TABLE IF NOT EXISTS registros (
+          id SERIAL PRIMARY KEY,
+          discord_id TEXT,
+          nombre TEXT NOT NULL,
+          seccion TEXT NOT NULL,
+          tipo TEXT NOT NULL,
+          horas REAL DEFAULT 0,
+          servicio_nombre TEXT,
+          monto REAL DEFAULT 0,
+          comision REAL DEFAULT 0,
+          nota TEXT,
+          foto_url TEXT,
+          validado INTEGER DEFAULT 1,
+          validado_por TEXT,
+          creado_en TEXT NOT NULL
+        );
       `);
     } else {
       const db = getSqliteDb();
@@ -126,10 +148,38 @@ export async function ensurePerfilColumns(): Promise<void> {
         try {
           db.exec("ALTER TABLE usuarios ADD COLUMN avatar_url TEXT;");
         } catch {}
+        try {
+          db.exec("ALTER TABLE usuarios ADD COLUMN discord_id TEXT;");
+        } catch {}
+        try {
+          db.exec(`
+            CREATE TABLE IF NOT EXISTS canales_trabajador (
+              discord_id TEXT PRIMARY KEY,
+              nombre TEXT NOT NULL,
+              canal_id TEXT
+            );
+            CREATE TABLE IF NOT EXISTS registros (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              discord_id TEXT,
+              nombre TEXT NOT NULL,
+              seccion TEXT NOT NULL,
+              tipo TEXT NOT NULL,
+              horas REAL DEFAULT 0,
+              servicio_nombre TEXT,
+              monto REAL DEFAULT 0,
+              comision REAL DEFAULT 0,
+              nota TEXT,
+              foto_url TEXT,
+              validado INTEGER DEFAULT 1,
+              validado_por TEXT,
+              creado_en TEXT NOT NULL
+            );
+          `);
+        } catch {}
       }
     }
     migrationPerfilRan = true;
   } catch (err) {
-    console.error("Error asegurando columnas de perfil:", err);
+    console.error("Error asegurando columnas de perfil y tablas:", err);
   }
 }

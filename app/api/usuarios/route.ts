@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, hashPassword } from "@/lib/auth";
-import { query, ensurePerfilColumns } from "@/lib/db";
+import { query, ensurePerfilColumns, isPostgres } from "@/lib/db";
 
 export async function GET() {
   try {
@@ -18,8 +18,9 @@ export async function GET() {
       rol: string;
       permisos: string;
       debe_cambiar_password: number;
+      discord_id: string | null;
       creado_en: string;
-    }>("SELECT username, nombre, avatar_url, rol, permisos, debe_cambiar_password, creado_en FROM usuarios ORDER BY username ASC");
+    }>("SELECT username, nombre, avatar_url, rol, permisos, debe_cambiar_password, discord_id, creado_en FROM usuarios ORDER BY username ASC");
 
     const usuarios = rows.map((u) => {
       let permisos: string[] = [];
@@ -35,6 +36,7 @@ export async function GET() {
         rol: u.rol,
         permisos,
         debe_cambiar_password: Boolean(u.debe_cambiar_password),
+        discord_id: u.discord_id || null,
         creado_en: u.creado_en,
       };
     });
@@ -58,6 +60,8 @@ export async function POST(request: Request) {
     const password = body.password || "";
     const rol = body.rol || "jefe";
     const permisos = body.permisos || [];
+    const nombre = (body.nombre || "").trim() || null;
+    const discord_id = (body.discord_id || "").trim() || null;
 
     if (!username || !password) {
       return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
@@ -66,16 +70,44 @@ export async function POST(request: Request) {
     const passwordHash = hashPassword(password);
     const nowIso = new Date().toISOString();
 
-    await query(
-      `INSERT INTO usuarios (username, password_hash, rol, permisos, debe_cambiar_password, creado_en)
-       VALUES ($1, $2, $3, $4, 1, $5)
-       ON CONFLICT (username) DO UPDATE SET
-       password_hash = EXCLUDED.password_hash,
-       rol = EXCLUDED.rol,
-       permisos = EXCLUDED.permisos,
-       debe_cambiar_password = EXCLUDED.debe_cambiar_password`,
-      [username, passwordHash, rol, JSON.stringify(permisos), nowIso]
-    );
+    if (isPostgres()) {
+      await query(
+        `INSERT INTO usuarios (username, password_hash, rol, permisos, debe_cambiar_password, creado_en, nombre, discord_id)
+         VALUES ($1, $2, $3, $4, 1, $5, $6, $7)
+         ON CONFLICT (username) DO UPDATE SET
+         password_hash = EXCLUDED.password_hash,
+         rol = EXCLUDED.rol,
+         permisos = EXCLUDED.permisos,
+         debe_cambiar_password = EXCLUDED.debe_cambiar_password,
+         nombre = COALESCE(EXCLUDED.nombre, usuarios.nombre),
+         discord_id = COALESCE(EXCLUDED.discord_id, usuarios.discord_id)`,
+        [username, passwordHash, rol, JSON.stringify(permisos), nowIso, nombre, discord_id]
+      );
+
+      // Si tiene nombre y discord_id, asegurar en canales_trabajador
+      if (nombre && discord_id) {
+        await query(
+          `INSERT INTO canales_trabajador (discord_id, nombre, canal_id)
+           VALUES ($1, $2, 'web')
+           ON CONFLICT (discord_id) DO UPDATE SET nombre = EXCLUDED.nombre`,
+          [discord_id, nombre]
+        );
+      }
+    } else {
+      await query(
+        `INSERT OR REPLACE INTO usuarios (username, password_hash, rol, permisos, debe_cambiar_password, creado_en, nombre, discord_id)
+         VALUES ($1, $2, $3, $4, 1, $5, $6, $7)`,
+        [username, passwordHash, rol, JSON.stringify(permisos), nowIso, nombre, discord_id]
+      );
+
+      if (nombre && discord_id) {
+        await query(
+          `INSERT OR REPLACE INTO canales_trabajador (discord_id, nombre, canal_id)
+           VALUES ($1, $2, 'web')`,
+          [discord_id, nombre]
+        );
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

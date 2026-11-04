@@ -6,9 +6,10 @@ export interface UserSession {
   username: string;
   nombre?: string | null;
   avatar_url?: string | null;
-  rol: "superadmin" | "jefe";
+  rol: "superadmin" | "jefe" | "trabajador";
   permisos: string[];
   debe_cambiar_password: boolean;
+  discord_id?: string | null;
 }
 
 export function hashPassword(password: string): string {
@@ -50,10 +51,11 @@ export async function getCurrentUser(): Promise<UserSession | null> {
       username: string;
       nombre: string | null;
       avatar_url: string | null;
-      rol: "superadmin" | "jefe";
+      rol: "superadmin" | "jefe" | "trabajador";
       permisos: string;
       debe_cambiar_password: number;
-    }>("SELECT username, nombre, avatar_url, rol, permisos, debe_cambiar_password FROM usuarios WHERE username = $1", [
+      discord_id: string | null;
+    }>("SELECT username, nombre, avatar_url, rol, permisos, debe_cambiar_password, discord_id FROM usuarios WHERE username = $1", [
       session.username,
     ]);
 
@@ -73,6 +75,7 @@ export async function getCurrentUser(): Promise<UserSession | null> {
       rol: user.rol,
       permisos,
       debe_cambiar_password: Boolean(user.debe_cambiar_password),
+      discord_id: user.discord_id || null,
     };
   } catch (error) {
     console.error("Error al obtener usuario actual:", error);
