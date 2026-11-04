@@ -24,6 +24,12 @@ interface TurnosActivosViewProps {
   onTurnoFinalizado?: () => void;
 }
 
+function parseHoraInicio(h: string): number {
+  if (!h) return Date.now();
+  const iso = h.endsWith("Z") ? h : `${h}Z`;
+  return new Date(iso).getTime();
+}
+
 export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosViewProps) {
   const [tiempoTranscurrido, setTiempoTranscurrido] = useState<Record<string, string>>({});
   const [cerrandoId, setCerrandoId] = useState<string | null>(null);
@@ -34,7 +40,7 @@ export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosVi
       const nuevo: Record<string, string> = {};
 
       for (const t of turnos) {
-        const inicio = new Date(t.hora_inicio).getTime();
+        const inicio = parseHoraInicio(t.hora_inicio);
         const diffSegundos = Math.max(0, Math.floor((ahora - inicio) / 1000));
         const horas = Math.floor(diffSegundos / 3600);
         const minutos = Math.floor((diffSegundos % 3600) / 60);
@@ -74,7 +80,7 @@ export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosVi
   const handleCerrarColgados = async () => {
     const ahora = Date.now();
     const colgados = turnos.filter((t) => {
-      const diffHoras = (ahora - new Date(t.hora_inicio).getTime()) / (1000 * 3600);
+      const diffHoras = (ahora - parseHoraInicio(t.hora_inicio)) / (1000 * 3600);
       return diffHoras > 24;
     });
 
@@ -95,7 +101,7 @@ export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosVi
   };
 
   const ahora = Date.now();
-  const hayColgados = turnos.some((t) => (ahora - new Date(t.hora_inicio).getTime()) / (1000 * 3600) > 24);
+  const hayColgados = turnos.some((t) => (ahora - parseHoraInicio(t.hora_inicio)) / (1000 * 3600) > 24);
 
   return (
     <div className="space-y-4">
@@ -142,7 +148,7 @@ export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosVi
           {turnos.map((t) => {
             const seccion = SECCIONES[t.seccion];
             const duracion = tiempoTranscurrido[t.discord_id] || "0:00:00";
-            const diffHoras = (ahora - new Date(t.hora_inicio).getTime()) / (1000 * 3600);
+            const diffHoras = (ahora - parseHoraInicio(t.hora_inicio)) / (1000 * 3600);
             const esColgado = diffHoras > 24;
             const isClosing = cerrandoId === t.discord_id;
 
@@ -180,7 +186,7 @@ export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosVi
                       Entrada
                     </span>
                     <span className="text-xs font-semibold text-slate-300">
-                      {new Date(t.hora_inicio).toLocaleTimeString("es-CL", {
+                      {new Date(parseHoraInicio(t.hora_inicio)).toLocaleTimeString("es-CL", {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
