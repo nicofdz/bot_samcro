@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { SECCIONES } from "@/lib/config";
-import { Clock, Radio, User, AlertTriangle, XCircle, RefreshCw, Flame } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faTowerBroadcast,
+  faTriangleExclamation,
+  faCircleXmark,
+  faClock,
+  faCircleNotch,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface TurnoActivo {
   discord_id: string;
@@ -95,7 +102,7 @@ export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosVi
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-base font-black tracking-wide text-slate-100 flex items-center gap-2 uppercase">
-            <Radio className="h-4 w-4 text-emerald-400 animate-pulse" />
+            <FontAwesomeIcon icon={faTowerBroadcast} className="h-4 w-4 text-emerald-400" />
             Turnos de Trabajo en Vivo &bull; Radar SAMCRO
           </h2>
           <p className="text-xs text-slate-400 font-medium">
@@ -107,15 +114,15 @@ export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosVi
           {hayColgados && (
             <button
               onClick={handleCerrarColgados}
-              className="flex items-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-xs font-black tracking-wider uppercase text-amber-300 hover:bg-amber-500/25 transition cursor-pointer shadow-sm"
+              className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-xs font-black tracking-wider uppercase text-amber-300 hover:bg-amber-500/25 transition cursor-pointer shadow-sm"
               title="Cerrar los turnos que llevan más de 24 horas abiertos"
             >
-              <AlertTriangle className="h-3.5 w-3.5" />
+              <FontAwesomeIcon icon={faTriangleExclamation} className="h-3.5 w-3.5 text-amber-400" />
               <span>Limpiar turnos antiguos (&gt;24h)</span>
             </button>
           )}
 
-          <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-black tracking-wider uppercase text-emerald-400 border border-emerald-500/30 shadow-sm flex items-center gap-1.5">
+          <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-black tracking-wider uppercase text-emerald-400 border border-emerald-500/30 shadow-sm flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-400 radar-live" />
             {turnos.length} {turnos.length === 1 ? "persona activa" : "personas activas"}
           </span>
@@ -124,7 +131,7 @@ export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosVi
 
       {turnos.length === 0 ? (
         <div className="samcro-panel flex flex-col items-center justify-center rounded-2xl p-14 text-center text-slate-500 border border-white/10">
-          <Clock className="h-10 w-10 text-slate-600 mb-3" />
+          <FontAwesomeIcon icon={faClock} className="h-8 w-8 text-slate-600 mb-3" />
           <p className="text-sm font-bold text-slate-300">No hay ningún turno abierto en este momento.</p>
           <p className="text-xs text-slate-500 mt-1">
             Los miembros inician turno desde su canal privado de Discord con el panel interactivo.
@@ -195,8 +202,8 @@ export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosVi
                 </div>
 
                 {esColgado && (
-                  <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-bold text-amber-400/90 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
-                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  <div className="mt-2.5 flex items-center gap-2 text-[11px] font-bold text-amber-400/90 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
+                    <FontAwesomeIcon icon={faTriangleExclamation} className="h-3 w-3 shrink-0" />
                     <span>Turno prolongado (+24 horas)</span>
                   </div>
                 )}
@@ -208,10 +215,10 @@ export function TurnosActivosView({ turnos, onTurnoFinalizado }: TurnosActivosVi
                     className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-950/30 px-3 py-1.5 text-xs font-bold text-red-300 hover:bg-red-900/40 transition cursor-pointer"
                   >
                     {isClosing ? (
-                      <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-300 border-t-transparent" />
+                      <FontAwesomeIcon icon={faCircleNotch} className="h-3 w-3 animate-spin text-red-300" />
                     ) : (
                       <>
-                        <XCircle className="h-3.5 w-3.5 text-red-400" />
+                        <FontAwesomeIcon icon={faCircleXmark} className="h-3.5 w-3.5 text-red-400" />
                         <span>Cerrar Turno</span>
                       </>
                     )}

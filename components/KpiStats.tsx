@@ -1,8 +1,15 @@
 "use client";
 
 import React from "react";
-import { DollarSign, Users, Clock, Wrench, CheckCircle2, ShieldAlert } from "lucide-react";
 import { TrabajadorNomina } from "@/lib/nomina";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faDollarSign,
+  faCircleCheck,
+  faClock,
+  faWrench,
+  faUsers,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface KpiStatsProps {
   trabajadores: TrabajadorNomina[];
@@ -29,7 +36,7 @@ export function KpiStats({ trabajadores, turnosActivosCount }: KpiStatsProps) {
             Total a Liquidar
           </span>
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-inner">
-            <DollarSign className="h-4 w-4" />
+            <FontAwesomeIcon icon={faDollarSign} className="h-3.5 w-3.5" />
           </div>
         </div>
         <p className="mt-2 text-2xl font-black tracking-tight text-amber-300 drop-shadow-md">
@@ -48,7 +55,7 @@ export function KpiStats({ trabajadores, turnosActivosCount }: KpiStatsProps) {
             Progreso Pagos
           </span>
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
-            <CheckCircle2 className="h-4 w-4" />
+            <FontAwesomeIcon icon={faCircleCheck} className="h-3.5 w-3.5" />
           </div>
         </div>
         <p className="mt-2 text-2xl font-black tracking-tight text-emerald-400">
@@ -68,14 +75,14 @@ export function KpiStats({ trabajadores, turnosActivosCount }: KpiStatsProps) {
             Horas Turnos
           </span>
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/15 text-sky-400 border border-sky-500/25">
-            <Clock className="h-4 w-4" />
+            <FontAwesomeIcon icon={faClock} className="h-3.5 w-3.5" />
           </div>
         </div>
         <p className="mt-2 text-2xl font-black tracking-tight text-sky-300">
           {Math.round(totalHoras * 10) / 10} <span className="text-xs font-bold text-slate-400">hrs</span>
         </p>
         <div className="mt-1 flex items-center justify-between text-[11px] text-slate-400">
-          <span className="flex items-center gap-1 font-semibold">
+          <span className="flex items-center gap-1.5 font-semibold">
             <span className={`h-1.5 w-1.5 rounded-full ${turnosActivosCount > 0 ? 'bg-emerald-400 animate-ping' : 'bg-slate-500'}`} />
             {turnosActivosCount} en vivo ahora
           </span>
@@ -89,7 +96,7 @@ export function KpiStats({ trabajadores, turnosActivosCount }: KpiStatsProps) {
             Trabajos / Ventas
           </span>
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/15 text-purple-400 border border-purple-500/25">
-            <Wrench className="h-4 w-4" />
+            <FontAwesomeIcon icon={faWrench} className="h-3.5 w-3.5" />
           </div>
         </div>
         <p className="mt-2 text-2xl font-black tracking-tight text-purple-300">
@@ -107,7 +114,7 @@ export function KpiStats({ trabajadores, turnosActivosCount }: KpiStatsProps) {
             Plantilla SAMCRO
           </span>
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-slate-300 border border-white/10">
-            <Users className="h-4 w-4" />
+            <FontAwesomeIcon icon={faUsers} className="h-3.5 w-3.5" />
           </div>
         </div>
         <p className="mt-2 text-2xl font-black tracking-tight text-slate-100">

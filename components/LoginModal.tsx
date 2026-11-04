@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { Lock, User, ArrowRight, Shield, Flame } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faLock,
+  faUser,
+  faArrowRight,
+  faShieldHalved,
+  faFire,
+  faCircleNotch,
+} from "@fortawesome/free-solid-svg-icons";
 import { UserSession } from "@/lib/auth";
 
 interface LoginModalProps {
@@ -66,7 +74,7 @@ export function LoginModal({ onLoginSuccess }: LoginModalProps) {
             {/* Badges del club sobre la imagen */}
             <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-2">
               <span className="flex items-center gap-1.5 rounded-full bg-black/80 px-3 py-1 text-[10px] sm:text-xs font-black tracking-widest uppercase text-amber-400 border border-amber-500/40 backdrop-blur-md shadow-lg">
-                <Flame className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-500" />
+                <FontAwesomeIcon icon={faFire} className="h-3 w-3 text-amber-500" />
                 Redwood Original &bull; Men of Mayhem
               </span>
             </div>
@@ -117,7 +125,10 @@ export function LoginModal({ onLoginSuccess }: LoginModalProps) {
                       Usuario
                     </label>
                     <div className="relative">
-                      <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                      <FontAwesomeIcon
+                        icon={faUser}
+                        className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500"
+                      />
                       <input
                         type="text"
                         required
@@ -135,7 +146,10 @@ export function LoginModal({ onLoginSuccess }: LoginModalProps) {
                       Contraseña
                     </label>
                     <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                      <FontAwesomeIcon
+                        icon={faLock}
+                        className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500"
+                      />
                       <input
                         type="password"
                         required
@@ -160,11 +174,11 @@ export function LoginModal({ onLoginSuccess }: LoginModalProps) {
                   className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 py-3 text-xs sm:text-sm font-black tracking-widest uppercase text-slate-950 transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50 shadow-[0_4px_20px_rgba(217,119,6,0.35)] cursor-pointer"
                 >
                   {cargando ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-950 border-t-transparent" />
+                    <FontAwesomeIcon icon={faCircleNotch} className="h-4 w-4 animate-spin text-slate-950" />
                   ) : (
                     <>
                       <span>INGRESAR A LA REUNIÓN</span>
-                      <ArrowRight className="h-4 w-4 text-slate-950" />
+                      <FontAwesomeIcon icon={faArrowRight} className="h-3.5 w-3.5 text-slate-950" />
                     </>
                   )}
                 </button>
@@ -172,8 +186,8 @@ export function LoginModal({ onLoginSuccess }: LoginModalProps) {
 
               {/* Pie de autenticación */}
               <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-500">
-                <span className="flex items-center gap-1">
-                  <Shield className="h-3 w-3 text-amber-500/70" />
+                <span className="flex items-center gap-1.5">
+                  <FontAwesomeIcon icon={faShieldHalved} className="h-3 w-3 text-amber-500/70" />
                   Conexión segura Supabase
                 </span>
                 <span>SAMCRO &bull; Redwood Original 1967</span>

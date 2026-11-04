@@ -3,7 +3,14 @@
 import React, { useState } from "react";
 import { TrabajadorNomina } from "@/lib/nomina";
 import { formatPeso } from "./KpiStats";
-import { Check, Clock, Eye, Search, ShieldCheck, Sparkles, UserCheck, Flame } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFire,
+  faMagnifyingGlass,
+  faCheck,
+  faHourglassHalf,
+  faEye,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface NominaTableProps {
   seccionKey: string;
@@ -44,7 +51,7 @@ export function NominaTable({
       <div className="flex flex-col gap-3 border-b border-white/10 bg-[#0d0f15]/90 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
-            <Flame className="h-5 w-5" />
+            <FontAwesomeIcon icon={faFire} className="h-4 w-4" />
           </div>
           <div>
             <h2 className="text-sm sm:text-base font-black tracking-wide text-slate-100 uppercase">
@@ -58,7 +65,10 @@ export function NominaTable({
 
         {/* Buscador táctico */}
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <FontAwesomeIcon
+            icon={faMagnifyingGlass}
+            className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500"
+          />
           <input
             type="text"
             value={busqueda}
@@ -204,12 +214,12 @@ export function NominaTable({
                             <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
                           ) : estaPagado ? (
                             <>
-                              <Check className="h-3.5 w-3.5 text-emerald-400 stroke-[3]" />
+                              <FontAwesomeIcon icon={faCheck} className="h-3 w-3 text-emerald-400" />
                               <span>Pagado</span>
                             </>
                           ) : (
                             <>
-                              <span className="h-2 w-2 rounded-full bg-amber-400/80" />
+                              <FontAwesomeIcon icon={faHourglassHalf} className="h-2.5 w-2.5 text-amber-400/90" />
                               <span>Pendiente</span>
                             </>
                           )}
@@ -225,7 +235,7 @@ export function NominaTable({
                         onClick={() => onVerDetalles(t)}
                         className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-black/60 px-3 py-1.5 text-xs font-black uppercase tracking-wider text-slate-300 transition-all hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-300 cursor-pointer shadow-sm"
                       >
-                        <Eye className="h-3.5 w-3.5" />
+                        <FontAwesomeIcon icon={faEye} className="h-3 w-3" />
                         <span>Desglose</span>
                       </button>
                     </td>

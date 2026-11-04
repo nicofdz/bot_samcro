@@ -12,7 +12,29 @@ import { TurnosActivosView } from "@/components/TurnosActivosView";
 import { AdminUsuariosView } from "@/components/AdminUsuariosView";
 import { LoginModal } from "@/components/LoginModal";
 import { CambiarPasswordModal } from "@/components/CambiarPasswordModal";
-import { Radio, Users, ShieldAlert, Layers, Flame, CalendarClock } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCalendarCheck,
+  faChartPie,
+  faWrench,
+  faBeerMugEmpty,
+  faPenNib,
+  faMusic,
+  faTowerBroadcast,
+  faGear,
+  faCircleNotch,
+} from "@fortawesome/free-solid-svg-icons";
+
+// Mapeo de iconos Font Awesome por sección
+const ICONOS_SECCION: Record<string, any> = {
+  consolidado: faChartPie,
+  mecanica: faWrench,
+  bar: faBeerMugEmpty,
+  tatuajes: faPenNib,
+  show: faMusic,
+  turnos: faTowerBroadcast,
+  admin: faGear,
+};
 
 export default function DashboardPage() {
   const [user, setUser] = useState<UserSession | null>(null);
@@ -44,7 +66,6 @@ export default function DashboardPage() {
         if (res.ok) {
           const u = await res.json();
           setUser(u);
-          // Si no tiene permiso de consolidado, seleccionar su primera sección autorizada
           if (u.rol !== "superadmin" && !u.permisos.includes("consolidado")) {
             const primerPermiso = Object.keys(SECCIONES).find((s) => u.permisos.includes(s));
             if (primerPermiso) setTabActiva(primerPermiso);
@@ -84,7 +105,7 @@ export default function DashboardPage() {
 
   // Lista de semanas disponibles del backend
   const semanas = datosNomina["_info_semana"]?.semanas || [
-    { offset: 0, label: "🟢 Semana Actual", rango: "", es_actual: true },
+    { offset: 0, label: "Semana Actual", rango: "", es_actual: true },
   ];
 
   // Turnos activos
@@ -175,7 +196,7 @@ export default function DashboardPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#07080b]">
         <div className="flex flex-col items-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-3 border-amber-500 border-t-transparent" />
+          <FontAwesomeIcon icon={faCircleNotch} className="h-9 w-9 text-amber-500 animate-spin" />
           <span className="mt-4 text-xs font-black tracking-widest text-amber-400 uppercase">
             CONECTANDO CON MESA SAMCRO...
           </span>
@@ -189,20 +210,21 @@ export default function DashboardPage() {
     return <LoginModal onLoginSuccess={(u) => setUser(u)} />;
   }
 
-  // Lista de tabs permitidas para este usuario
+  // Lista de tabs permitidas para este usuario (con iconos Font Awesome)
   const tabsDisponibles = [
     ...(user.rol === "superadmin" || user.permisos.includes("consolidado")
-      ? [{ key: "consolidado", label: "📊 Consolidado" }]
+      ? [{ key: "consolidado", label: "Consolidado", icon: ICONOS_SECCION.consolidado }]
       : []),
     ...Object.entries(SECCIONES)
       .filter(([k]) => user.rol === "superadmin" || user.permisos.includes("consolidado") || user.permisos.includes(k))
-      .map(([k, v]) => ({ key: k, label: v.nombre_visible })),
+      .map(([k, v]) => ({ key: k, label: v.nombre_visible, icon: ICONOS_SECCION[k] || faWrench })),
     {
       key: "turnos",
-      label: `🟢 Turnos en Vivo (${turnosActivos.length})`,
+      label: `Turnos en Vivo (${turnosActivos.length})`,
+      icon: ICONOS_SECCION.turnos,
       badge: turnosActivos.length > 0,
     },
-    ...(user.rol === "superadmin" ? [{ key: "admin", label: "⚙️ Administración" }] : []),
+    ...(user.rol === "superadmin" ? [{ key: "admin", label: "Administración", icon: ICONOS_SECCION.admin }] : []),
   ];
 
   return (
@@ -223,7 +245,7 @@ export default function DashboardPage() {
         <div className="samcro-panel flex flex-col gap-3 rounded-2xl border border-white/10 p-4 sm:flex-row sm:items-center sm:justify-between shadow-xl">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
-              <CalendarClock className="h-5 w-5" />
+              <FontAwesomeIcon icon={faCalendarCheck} className="h-4 w-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -231,7 +253,7 @@ export default function DashboardPage() {
                   Periodo de Liquidación Activo
                 </span>
                 {offset === 0 && (
-                  <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-black text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
+                  <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-black text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
                     Semana en curso
                   </span>
                 )}
@@ -254,16 +276,22 @@ export default function DashboardPage() {
           turnosActivosCount={turnosActivos.length}
         />
 
-        {/* Tabs de Secciones estilo Rocker Patches */}
+        {/* Tabs de Secciones estilo Rocker Patches con Font Awesome */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           {tabsDisponibles.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setTabActiva(tab.key)}
-              className={`rocker-tab flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-xs font-black uppercase tracking-wider cursor-pointer ${
+              className={`rocker-tab flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-black uppercase tracking-wider cursor-pointer ${
                 tabActiva === tab.key ? "rocker-tab-active" : "text-slate-400"
               }`}
             >
+              {tab.icon && (
+                <FontAwesomeIcon
+                  icon={tab.icon}
+                  className={`h-3 w-3 ${tabActiva === tab.key ? "text-amber-300" : "text-slate-400"}`}
+                />
+              )}
               <span>{tab.label}</span>
               {tab.badge && (
                 <span className="h-2 w-2 rounded-full bg-emerald-400 radar-live" />
@@ -284,7 +312,7 @@ export default function DashboardPage() {
           <div>
             {cargandoNomina ? (
               <div className="samcro-panel flex flex-col items-center justify-center py-24 text-slate-400 rounded-2xl border border-white/10">
-                <div className="h-10 w-10 animate-spin rounded-full border-3 border-amber-500 border-t-transparent" />
+                <FontAwesomeIcon icon={faCircleNotch} className="h-8 w-8 text-amber-500 animate-spin" />
                 <p className="mt-4 text-xs font-black tracking-widest text-amber-400 uppercase">
                   Auditoría y cálculo de nómina en proceso...
                 </p>
@@ -298,7 +326,7 @@ export default function DashboardPage() {
                 seccionKey={tabActiva}
                 seccionNombre={
                   tabActiva === "consolidado"
-                    ? "📊 Resumen Consolidado de Todas las Áreas"
+                    ? "Resumen Consolidado de Todas las Áreas"
                     : SECCIONES[tabActiva]?.nombre_visible || tabActiva
                 }
                 trabajadores={trabajadoresActuales}

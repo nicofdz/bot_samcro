@@ -101,11 +101,11 @@ export async function GET(request: Request) {
       const rango = obtenerRangoSemana(o);
       let label = "";
       if (o === 0) {
-        label = `🟢 Semana Actual (${formatoFechaCorta(rango.inicioLocal)} - ${formatoFechaCorta(rango.finLocal)})`;
+        label = `Semana Actual (${formatoFechaCorta(rango.inicioLocal)} - ${formatoFechaCorta(rango.finLocal)})`;
       } else if (o === -1) {
-        label = `📁 Semana Anterior (${formatoFechaCorta(rango.inicioLocal)} - ${formatoFechaCorta(rango.finLocal)})`;
+        label = `Semana Anterior (${formatoFechaCorta(rango.inicioLocal)} - ${formatoFechaCorta(rango.finLocal)})`;
       } else {
-        label = `📁 Hace ${-o} semanas (${formatoFechaCorta(rango.inicioLocal)} - ${formatoFechaCorta(rango.finLocal)})`;
+        label = `Hace ${-o} semanas (${formatoFechaCorta(rango.inicioLocal)} - ${formatoFechaCorta(rango.finLocal)})`;
       }
 
       semanasDisponibles.push({

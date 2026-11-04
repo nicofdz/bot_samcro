@@ -8,28 +8,28 @@ export interface SeccionConfig {
 
 export const SECCIONES: Record<string, SeccionConfig> = {
   mecanica: {
-    nombre_visible: "🔧 Mecánica",
+    nombre_visible: "Mecánica",
     rol_jefe: ["Encargado de mecanicos", "Jefe Mecanicos", "Jefe de Mecánico", "Jefe Mecánica", "Enc. de Mecánico"],
     tarifa_hora: 0,
     comision_servicio: 0.30,
     usa_sueldo_base: true,
   },
   bar: {
-    nombre_visible: "🍺 Bar / Comida",
+    nombre_visible: "Bar / Comida",
     rol_jefe: ["Jefe Bar", "Jefe de Barra", "Enc. de BAR"],
     tarifa_hora: 0,
     comision_servicio: 0.40,
     usa_sueldo_base: false,
   },
   tatuajes: {
-    nombre_visible: "🖋️ Tatuajes",
+    nombre_visible: "Tatuajes",
     rol_jefe: ["Jefe Tatuador", "Jefe Tatuajes", "Enc. de Tattoo"],
     tarifa_hora: 0,
     comision_servicio: 0.30,
     usa_sueldo_base: false,
   },
   show: {
-    nombre_visible: "💃 Bailarinas / Show",
+    nombre_visible: "Bailarinas / Show",
     rol_jefe: ["Jefe Bailarina", "Jefa de Bailarinas", "Jefe Show"],
     tarifa_hora: 0,
     comision_servicio: 0.35,
@@ -48,6 +48,6 @@ export const PORCENTAJES_JEFE: Record<string, number> = {
   show: 0.40,
 };
 
-export const DIA_CIERRE_SEMANA = 6; // Domingo
-export const HORA_CIERRE_SEMANA = "16:00"; // 16:00 hrs
+export const DIA_CIERRE_SEMANA = 6;
+export const HORA_CIERRE_SEMANA = "16:00";
 export const ZONA_HORARIA = "America/Santiago";

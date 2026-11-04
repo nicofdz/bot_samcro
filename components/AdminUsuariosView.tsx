@@ -2,17 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { SECCIONES } from "@/lib/config";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  Users,
-  UserPlus,
-  ShieldAlert,
-  KeyRound,
-  Trash2,
-  Check,
-  X,
-  AlertTriangle,
-  Lock,
-} from "lucide-react";
+  faUsers,
+  faUserPlus,
+  faTrashCan,
+  faTriangleExclamation,
+  faLock,
+  faCircleNotch,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface Usuario {
   username: string;
@@ -105,6 +103,9 @@ export function AdminUsuariosView() {
       });
       if (res.ok) {
         cargarUsuarios();
+      } else {
+        const d = await res.json();
+        alert(d.error || "Error al eliminar usuario");
       }
     } catch (e) {
       console.error(e);
@@ -116,10 +117,12 @@ export function AdminUsuariosView() {
     try {
       const res = await fetch("/api/admin/limpiar-bdd", { method: "POST" });
       if (res.ok) {
-        alert("Base de datos limpiada con éxito. Se preservaron las cuentas de usuario.");
+        alert("Base de datos de turnos y registros limpiada correctamente.");
         setMostrarConfirmLimpieza(false);
+        window.location.reload();
       } else {
-        alert("Error al limpiar la base de datos.");
+        const d = await res.json();
+        alert(d.error || "Error al limpiar la base de datos");
       }
     } catch (e) {
       console.error(e);
@@ -129,74 +132,70 @@ export function AdminUsuariosView() {
   };
 
   const listaPermisosOpciones = [
-    { key: "consolidado", label: "📊 Consolidado (Todas las áreas)" },
+    { key: "consolidado", label: "Consolidado (Todas las áreas)" },
     ...Object.entries(SECCIONES).map(([k, v]) => ({ key: k, label: v.nombre_visible })),
   ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h2 className="text-base font-extrabold text-slate-100 flex items-center gap-2">
-          <Users className="h-5 w-5 text-amber-500" />
+        <h2 className="text-base font-black tracking-wide text-slate-100 flex items-center gap-2 uppercase">
+          <FontAwesomeIcon icon={faUsers} className="h-4 w-4 text-amber-500" />
           Administración de Cuentas y Accesos
         </h2>
-        <p className="text-xs text-slate-400">
-          Gestiona quién puede entrar al dashboard y qué secciones puede auditar o pagar.
+        <p className="text-xs text-slate-400 font-medium">
+          Crea accesos para jefes de área, asigna permisos o gestiona credenciales de la directiva
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Formulario Crear Usuario */}
-        <div className="glass-panel rounded-xl border border-white/10 p-5">
-          <h3 className="text-sm font-extrabold text-slate-100 flex items-center gap-2">
-            <UserPlus className="h-4 w-4 text-amber-400" />
-            Crear Nueva Cuenta
+        {/* Formulario Nuevo Usuario */}
+        <div className="samcro-panel col-span-1 rounded-2xl border border-white/10 p-5 shadow-xl">
+          <h3 className="text-sm font-black uppercase tracking-wider text-slate-100 flex items-center gap-2 mb-4">
+            <FontAwesomeIcon icon={faUserPlus} className="h-3.5 w-3.5 text-amber-400" />
+            Crear Acceso de Jefatura
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">Asigna rol y secciones permitidas.</p>
 
-          <form onSubmit={handleCrearUsuario} className="mt-4 space-y-3">
+          <form onSubmit={handleCrearUsuario} className="space-y-3.5">
             <div>
-              <label className="text-[11px] font-bold text-slate-300">Usuario</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Usuario</label>
               <input
                 type="text"
                 required
                 value={nuevoUsername}
                 onChange={(e) => setNuevoUsername(e.target.value)}
-                placeholder="ej: jefe_mecanica"
-                className="mt-1 w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-amber-500/50"
+                placeholder="ej: nico_mecanica"
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/70 px-3 py-2 text-xs font-semibold text-slate-200 outline-none focus:border-amber-500"
               />
             </div>
 
             <div>
-              <label className="text-[11px] font-bold text-slate-300">Contraseña Inicial</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Contraseña Inicial</label>
               <input
-                type="text"
+                type="password"
                 required
                 value={nuevoPassword}
                 onChange={(e) => setNuevoPassword(e.target.value)}
-                placeholder="Mínimo 4 caracteres"
-                className="mt-1 w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-amber-500/50"
+                placeholder="••••••••"
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/70 px-3 py-2 text-xs font-semibold text-slate-200 outline-none focus:border-amber-500"
               />
             </div>
 
             <div>
-              <label className="text-[11px] font-bold text-slate-300">Rol</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Rol de Acceso</label>
               <select
                 value={nuevoRol}
                 onChange={(e) => setNuevoRol(e.target.value as any)}
-                className="mt-1 w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-amber-500/50"
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/70 px-3 py-2 text-xs font-semibold text-slate-200 outline-none focus:border-amber-500 cursor-pointer"
               >
-                <option value="jefe">Jefe de Área</option>
-                <option value="superadmin">Super Administrador (Total)</option>
+                <option value="jefe">Jefe de Área (Oficial)</option>
+                <option value="superadmin">Super Administrador (Mesa Directiva)</option>
               </select>
             </div>
 
             <div>
-              <label className="text-[11px] font-bold text-slate-300 mb-1.5 block">
-                Permisos por Sección
-              </label>
-              <div className="space-y-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Permisos de Visualización</label>
+              <div className="mt-1.5 space-y-1.5 rounded-xl border border-white/10 bg-black/50 p-2.5">
                 {listaPermisosOpciones.map((p) => (
                   <label
                     key={p.key}
@@ -206,7 +205,7 @@ export function AdminUsuariosView() {
                       type="checkbox"
                       checked={nuevosPermisos.includes(p.key)}
                       onChange={() => handleTogglePermiso(p.key)}
-                      className="rounded border-white/10 bg-slate-950 text-amber-500 focus:ring-0"
+                      className="rounded border-white/10 bg-black text-amber-500 focus:ring-0 cursor-pointer"
                     />
                     <span>{p.label}</span>
                   </label>
@@ -214,12 +213,12 @@ export function AdminUsuariosView() {
               </div>
             </div>
 
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            {error && <p className="text-xs font-bold text-red-400">{error}</p>}
 
             <button
               type="submit"
               disabled={guardando}
-              className="mt-2 w-full rounded-lg bg-amber-500 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 transition"
+              className="mt-2 w-full rounded-xl bg-amber-500 py-2.5 text-xs font-black uppercase tracking-wider text-slate-950 hover:bg-amber-400 transition cursor-pointer"
             >
               {guardando ? "Creando..." : "Crear Usuario"}
             </button>
@@ -227,23 +226,28 @@ export function AdminUsuariosView() {
         </div>
 
         {/* Lista de Usuarios */}
-        <div className="glass-panel col-span-1 rounded-xl border border-white/10 p-5 lg:col-span-2">
-          <h3 className="text-sm font-extrabold text-slate-100 mb-3">Usuarios Registrados</h3>
+        <div className="samcro-panel col-span-1 rounded-2xl border border-white/10 p-5 shadow-xl lg:col-span-2">
+          <h3 className="text-sm font-black uppercase tracking-wider text-slate-100 mb-3">
+            Usuarios Registrados
+          </h3>
 
           {cargando ? (
-            <div className="py-8 text-center text-xs text-slate-400">Cargando cuentas...</div>
+            <div className="py-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+              <FontAwesomeIcon icon={faCircleNotch} className="h-4 w-4 animate-spin text-amber-500" />
+              <span>Cargando cuentas...</span>
+            </div>
           ) : (
             <div className="space-y-2">
               {usuarios.map((u) => (
                 <div
                   key={u.username}
-                  className="flex flex-col gap-2 rounded-xl border border-white/10 bg-slate-950/60 p-3 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-2 rounded-xl border border-white/10 bg-black/60 p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm text-slate-100">{u.username}</span>
                       <span
-                        className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                        className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${
                           u.rol === "superadmin"
                             ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                             : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
@@ -274,9 +278,9 @@ export function AdminUsuariosView() {
                     <button
                       onClick={() => handleEliminarUsuario(u.username)}
                       title="Eliminar cuenta"
-                      className="flex h-7 items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/10 px-2 text-xs font-semibold text-red-400 hover:bg-red-500/20"
+                      className="flex h-7 items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-950/30 px-2.5 text-xs font-bold text-red-400 hover:bg-red-900/40 cursor-pointer transition"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <FontAwesomeIcon icon={faTrashCan} className="h-3 w-3" />
                       <span>Eliminar</span>
                     </button>
                   </div>
@@ -288,12 +292,12 @@ export function AdminUsuariosView() {
       </div>
 
       {/* Zona de Peligro */}
-      <div className="rounded-xl border border-red-500/30 bg-red-950/15 p-5">
-        <h3 className="text-sm font-extrabold text-red-400 flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4" />
+      <div className="samcro-card rounded-2xl border border-red-500/30 bg-red-950/20 p-5">
+        <h3 className="text-sm font-black uppercase tracking-wider text-red-400 flex items-center gap-2">
+          <FontAwesomeIcon icon={faTriangleExclamation} className="h-4 w-4" />
           Zona de Peligro del Sistema
         </h3>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-400 font-medium">
           Reiniciar o vaciar datos históricos de turnos y servicios. Las cuentas de usuario no se
           eliminarán.
         </p>
@@ -301,7 +305,7 @@ export function AdminUsuariosView() {
         <div className="mt-4">
           <button
             onClick={() => setMostrarConfirmLimpieza(true)}
-            className="rounded-lg border border-red-500/40 bg-red-600/20 px-3 py-1.5 text-xs font-bold text-red-300 hover:bg-red-600/30 transition"
+            className="rounded-xl border border-red-500/40 bg-red-600/20 px-3.5 py-2 text-xs font-black uppercase tracking-wider text-red-300 hover:bg-red-600/30 transition cursor-pointer"
           >
             Limpiar Todos los Registros de la BD
           </button>
@@ -310,13 +314,13 @@ export function AdminUsuariosView() {
 
       {/* Modal Confirmación Limpieza */}
       {mostrarConfirmLimpieza && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/80 p-4">
-          <div className="glass-panel w-full max-w-md rounded-xl border border-red-500/40 p-5 shadow-2xl">
-            <h3 className="text-sm font-extrabold text-red-400 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
+        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/85 p-4">
+          <div className="samcro-panel w-full max-w-md rounded-2xl border border-red-500/40 p-6 shadow-2xl">
+            <h3 className="text-sm font-black uppercase tracking-wider text-red-400 flex items-center gap-2">
+              <FontAwesomeIcon icon={faTriangleExclamation} className="h-4 w-4" />
               ¿Confirmas el borrado de registros?
             </h3>
-            <p className="mt-2 text-xs text-slate-300">
+            <p className="mt-2 text-xs text-slate-300 font-medium leading-relaxed">
               Esta acción borrará permanentemente todos los turnos, servicios registrados y listas de
               pagos. Las contraseñas y cuentas seguirán intactas.
             </p>
@@ -324,14 +328,14 @@ export function AdminUsuariosView() {
             <div className="mt-5 flex justify-end gap-2">
               <button
                 onClick={() => setMostrarConfirmLimpieza(false)}
-                className="rounded-lg border border-white/10 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700"
+                className="rounded-xl border border-white/10 bg-slate-800 px-3.5 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-700 cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleLimpiarBdd}
                 disabled={limpiando}
-                className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-500 transition"
+                className="rounded-xl bg-red-600 px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-white hover:bg-red-500 transition cursor-pointer"
               >
                 {limpiando ? "Borrando..." : "Sí, borrar registros"}
               </button>

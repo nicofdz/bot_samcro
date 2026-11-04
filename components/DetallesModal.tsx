@@ -2,19 +2,22 @@
 
 import React, { useState, useEffect } from "react";
 import { formatPeso } from "./KpiStats";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  X,
-  Clock,
-  Wrench,
-  Pencil,
-  Ban,
-  RotateCcw,
-  CheckCircle,
-  AlertCircle,
-  Image as ImageIcon,
-  Minus,
-  Plus,
-} from "lucide-react";
+  faXmark,
+  faClock,
+  faWrench,
+  faPen,
+  faBan,
+  faRotateLeft,
+  faCheck,
+  faHourglassHalf,
+  faImage,
+  faCircleDot,
+  faPlus,
+  faMinus,
+  faCircleNotch,
+} from "@fortawesome/free-solid-svg-icons";
 import { SECCIONES } from "@/lib/config";
 
 interface RegistroDetalle {
@@ -150,7 +153,7 @@ export function DetallesModal({
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-800 text-slate-300 transition hover:bg-slate-700 hover:text-white cursor-pointer"
           >
-            <X className="h-4 w-4" />
+            <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
           </button>
         </div>
 
@@ -158,8 +161,8 @@ export function DetallesModal({
         <div className="flex-1 overflow-y-auto p-6">
           {cargando ? (
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
-              <p className="mt-3 text-xs">Cargando registros del trabajador...</p>
+              <FontAwesomeIcon icon={faCircleNotch} className="h-8 w-8 text-amber-500 animate-spin" />
+              <p className="mt-3 text-xs font-semibold">Cargando registros del trabajador...</p>
             </div>
           ) : error ? (
             <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center text-xs text-red-300">
@@ -167,7 +170,7 @@ export function DetallesModal({
             </div>
           ) : registros.length === 0 ? (
             <div className="py-16 text-center text-slate-500">
-              <p className="text-sm">No hay registros activos para esta semana.</p>
+              <p className="text-sm font-semibold">No hay registros activos para esta semana.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -185,7 +188,7 @@ export function DetallesModal({
                         ? "border-emerald-500/40 bg-emerald-950/20"
                         : esAnulado
                         ? "border-red-500/20 bg-red-950/10 opacity-60"
-                        : "border-white/10 bg-slate-900/50 hover:border-white/20"
+                        : "border-white/10 bg-black/50 hover:border-white/20"
                     }`}
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -203,9 +206,9 @@ export function DetallesModal({
                           {esActivo ? (
                             <div className="h-3 w-3 animate-ping rounded-full bg-emerald-400" />
                           ) : r.tipo === "horas" ? (
-                            <Clock className="h-4 w-4" />
+                            <FontAwesomeIcon icon={faClock} className="h-4 w-4" />
                           ) : (
-                            <Wrench className="h-4 w-4" />
+                            <FontAwesomeIcon icon={faWrench} className="h-4 w-4" />
                           )}
                         </div>
 
@@ -219,27 +222,31 @@ export function DetallesModal({
                                 : `Servicio: ${r.servicio_nombre || "Servicio general"}`}
                             </span>
 
-                            {/* Badge de estado */}
+                            {/* Badge de estado con Font Awesome */}
                             {esActivo ? (
-                              <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/40">
-                                🟢 EN CURSO
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-black text-emerald-400 border border-emerald-500/40 uppercase">
+                                <FontAwesomeIcon icon={faCircleDot} className="h-2.5 w-2.5" />
+                                EN CURSO
                               </span>
                             ) : esAnulado ? (
-                              <span className="rounded bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-400 border border-red-500/30">
-                                ❌ ANULADO
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/20 px-2.5 py-0.5 text-[10px] font-black text-red-400 border border-red-500/30 uppercase">
+                                <FontAwesomeIcon icon={faBan} className="h-2.5 w-2.5" />
+                                ANULADO
                               </span>
                             ) : esPendiente ? (
-                              <span className="rounded bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-400 border border-amber-500/30">
-                                ⏳ PENDIENTE
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-black text-amber-400 border border-amber-500/30 uppercase">
+                                <FontAwesomeIcon icon={faHourglassHalf} className="h-2.5 w-2.5" />
+                                PENDIENTE
                               </span>
                             ) : (
-                              <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/20">
-                                ✅ APROBADO
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-black text-emerald-400 border border-emerald-500/30 uppercase">
+                                <FontAwesomeIcon icon={faCheck} className="h-2.5 w-2.5" />
+                                APROBADO
                               </span>
                             )}
 
                             {r.seccion && (
-                              <span className="text-[10px] text-slate-400">
+                              <span className="text-[10px] text-slate-400 font-semibold">
                                 ({SECCIONES[r.seccion]?.nombre_visible || r.seccion})
                               </span>
                             )}
@@ -273,8 +280,8 @@ export function DetallesModal({
                         {r.foto_url && (
                           <button
                             onClick={() => setFotoAmpliada(r.foto_url || null)}
-                            className="group relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-slate-800 transition hover:border-amber-500/50"
-                            title="Ver captura de pantalla"
+                            className="group relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-slate-800 transition hover:border-amber-500/50 cursor-pointer"
+                            title="Ver captura de comprobante"
                           >
                             <img
                               src={r.foto_url}
@@ -282,7 +289,7 @@ export function DetallesModal({
                               className="h-full w-full object-cover transition group-hover:scale-110"
                             />
                             <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition">
-                              <ImageIcon className="h-4 w-4 text-white" />
+                              <FontAwesomeIcon icon={faImage} className="h-4 w-4 text-white" />
                             </div>
                           </button>
                         )}
@@ -294,9 +301,9 @@ export function DetallesModal({
                               <button
                                 onClick={() => handleAbrirEditarHoras(r.id as number, r.horas)}
                                 title="Editar horas del turno"
-                                className="flex h-8 items-center gap-1 rounded-lg border border-white/10 bg-slate-800 px-2 text-xs font-semibold text-slate-300 hover:border-amber-500/40 hover:bg-slate-700 hover:text-amber-400"
+                                className="flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-slate-800 px-2.5 text-xs font-bold text-slate-300 hover:border-amber-500/40 hover:bg-slate-700 hover:text-amber-400 cursor-pointer"
                               >
-                                <Pencil className="h-3.5 w-3.5" />
+                                <FontAwesomeIcon icon={faPen} className="h-3 w-3" />
                                 <span className="hidden sm:inline">Ajustar</span>
                               </button>
                             )}
@@ -305,18 +312,18 @@ export function DetallesModal({
                               <button
                                 onClick={() => handleAnular(r.id as number, false)}
                                 title="Restaurar registro"
-                                className="flex h-8 items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20"
+                                className="flex h-8 items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 cursor-pointer"
                               >
-                                <RotateCcw className="h-3.5 w-3.5" />
+                                <FontAwesomeIcon icon={faRotateLeft} className="h-3 w-3" />
                                 <span className="hidden sm:inline">Restaurar</span>
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleAnular(r.id as number, true)}
                                 title="Anular este registro"
-                                className="flex h-8 items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/10 px-2 text-xs font-semibold text-red-400 hover:bg-red-500/20"
+                                className="flex h-8 items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 text-xs font-bold text-red-400 hover:bg-red-500/20 cursor-pointer"
                               >
-                                <Ban className="h-3.5 w-3.5" />
+                                <FontAwesomeIcon icon={faBan} className="h-3 w-3" />
                                 <span className="hidden sm:inline">Anular</span>
                               </button>
                             )}
@@ -330,82 +337,69 @@ export function DetallesModal({
             </div>
           )}
         </div>
-      </div>
 
-      {/* Diálogo para editar horas */}
-      {editandoHoras && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 p-4">
-          <div className="glass-panel w-full max-w-sm rounded-xl border border-white/10 p-5 shadow-2xl">
-            <h3 className="text-sm font-extrabold text-slate-100">Ajustar Horas del Turno</h3>
-            <p className="mt-1 text-xs text-slate-400">
-              Modifica la duración del turno si hubo un error o descanso.
-            </p>
-
-            <div className="my-4 flex items-center justify-center gap-3">
+        {/* Diálogo editar horas */}
+        {editandoHoras && (
+          <div className="border-t border-white/10 bg-[#0d0f15] p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-xs text-slate-300">
+              Ajustando horas del registro <span className="font-bold text-amber-400">#{editandoHoras.id}</span>
+            </div>
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setInputHoras((h) => Math.max(0, Math.round((h - 0.5) * 10) / 10))}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                onClick={() => setInputHoras((prev) => Math.max(0, Math.round((prev - 0.5) * 10) / 10))}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-800 text-slate-200 hover:bg-slate-700 cursor-pointer"
               >
-                <Minus className="h-4 w-4" />
+                <FontAwesomeIcon icon={faMinus} className="h-3 w-3" />
               </button>
-
               <input
                 type="number"
                 step="0.1"
                 min="0"
                 value={inputHoras}
                 onChange={(e) => setInputHoras(parseFloat(e.target.value) || 0)}
-                className="w-24 rounded-lg border border-white/10 bg-slate-950 py-1.5 text-center text-lg font-extrabold text-amber-400 outline-none focus:border-amber-500/50"
+                className="w-20 rounded-lg border border-white/15 bg-black px-2 py-1.5 text-center text-xs font-bold text-amber-300 outline-none"
               />
-
               <button
-                onClick={() => setInputHoras((h) => Math.round((h + 0.5) * 10) / 10)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-slate-800 text-slate-200 hover:bg-slate-700"
+                onClick={() => setInputHoras((prev) => Math.round((prev + 0.5) * 10) / 10)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-800 text-slate-200 hover:bg-slate-700 cursor-pointer"
               >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setEditandoHoras(null)}
-                className="rounded-lg border border-white/10 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700"
-              >
-                Cancelar
+                <FontAwesomeIcon icon={faPlus} className="h-3 w-3" />
               </button>
               <button
                 onClick={handleGuardarHoras}
                 disabled={guardandoHoras}
-                className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-slate-950 hover:bg-amber-400 transition"
+                className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black uppercase text-slate-950 hover:bg-amber-400 transition cursor-pointer"
               >
-                {guardandoHoras ? "Guardando..." : "Guardar Ajuste"}
+                {guardandoHoras ? "Guardando..." : "Guardar"}
+              </button>
+              <button
+                onClick={() => setEditandoHoras(null)}
+                className="rounded-lg border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white cursor-pointer"
+              >
+                Cancelar
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Visor de Foto Ampliada */}
-      {fotoAmpliada && (
-        <div
-          onClick={() => setFotoAmpliada(null)}
-          className="fixed inset-0 z-70 flex items-center justify-center bg-black/90 p-4 cursor-zoom-out"
-        >
-          <div className="relative max-h-[90vh] max-w-[90vw]">
-            <img
-              src={fotoAmpliada}
-              alt="Foto ampliada"
-              className="max-h-[85vh] max-w-[85vw] rounded-xl object-contain shadow-2xl border border-white/10"
-            />
-            <button
-              onClick={() => setFotoAmpliada(null)}
-              className="absolute -top-3 -right-3 flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white shadow-lg"
-            >
-              <X className="h-4 w-4" />
-            </button>
+        {/* Visor de foto ampliada */}
+        {fotoAmpliada && (
+          <div
+            onClick={() => setFotoAmpliada(null)}
+            className="fixed inset-0 z-60 flex items-center justify-center bg-black/95 p-4 cursor-zoom-out"
+          >
+            <div className="relative max-h-[90vh] max-w-4xl overflow-hidden rounded-xl border border-white/20">
+              <img src={fotoAmpliada} alt="Foto comprobante ampliada" className="h-auto max-h-[85vh] w-auto object-contain" />
+              <button
+                onClick={() => setFotoAmpliada(null)}
+                className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/80 text-white border border-white/20 cursor-pointer"
+              >
+                <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

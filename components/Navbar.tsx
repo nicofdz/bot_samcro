@@ -2,7 +2,14 @@
 
 import React from "react";
 import { UserSession } from "@/lib/auth";
-import { Calendar, KeyRound, LogOut, ShieldCheck, User, Activity } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCalendarDays,
+  faKey,
+  faRightFromBracket,
+  faShieldHalved,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface NavbarProps {
   user: UserSession;
@@ -51,14 +58,17 @@ export function Navbar({
           </div>
         </div>
 
-        {/* Center: Selector de semanas estilo Biker Ledger */}
+        {/* Center: Selector de semanas */}
         <div className="flex items-center gap-2">
           <div className="relative flex items-center">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-amber-400 pointer-events-none" />
+            <FontAwesomeIcon
+              icon={faCalendarDays}
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-amber-400 pointer-events-none"
+            />
             <select
               value={currentOffset}
               onChange={(e) => onSelectOffset(Number(e.target.value))}
-              className="appearance-none rounded-xl border border-amber-500/30 bg-black/80 py-1.5 pl-8 pr-8 text-xs font-bold text-amber-200 outline-none transition hover:border-amber-500/60 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 cursor-pointer shadow-inner"
+              className="appearance-none rounded-xl border border-amber-500/30 bg-black/80 py-1.5 pl-9 pr-8 text-xs font-bold text-amber-200 outline-none transition hover:border-amber-500/60 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 cursor-pointer shadow-inner"
             >
               {semanas.map((s) => (
                 <option key={s.offset} value={s.offset} className="bg-[#0f1218] text-slate-100 font-semibold py-1">
@@ -70,12 +80,6 @@ export function Navbar({
               ▼
             </span>
           </div>
-
-          {/* Pill de conexión activa */}
-          <div className="hidden lg:flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-400 border border-emerald-500/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-            <span>DISCLOUD ONLINE</span>
-          </div>
         </div>
 
         {/* User profile & actions */}
@@ -84,9 +88,9 @@ export function Navbar({
             <div className="flex items-center justify-end gap-1.5">
               <span className="text-xs font-black tracking-wide text-slate-100 uppercase">{user.username}</span>
               {user.rol === "superadmin" ? (
-                <ShieldCheck className="h-4 w-4 text-amber-400" />
+                <FontAwesomeIcon icon={faShieldHalved} className="h-3.5 w-3.5 text-amber-400" />
               ) : (
-                <User className="h-3.5 w-3.5 text-emerald-400" />
+                <FontAwesomeIcon icon={faUser} className="h-3 w-3 text-emerald-400" />
               )}
             </div>
             <span className="rounded bg-black/60 px-1.5 py-0.2 text-[9px] font-extrabold tracking-wider uppercase text-amber-400/90 border border-white/5">
@@ -99,7 +103,7 @@ export function Navbar({
             title="Cambiar Contraseña"
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-800/80 text-slate-300 transition hover:border-amber-500/40 hover:bg-slate-700 hover:text-amber-400 cursor-pointer shadow-sm"
           >
-            <KeyRound className="h-4 w-4" />
+            <FontAwesomeIcon icon={faKey} className="h-3.5 w-3.5" />
           </button>
 
           <button
@@ -107,7 +111,7 @@ export function Navbar({
             title="Cerrar Sesión"
             className="flex h-8 items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-950/30 px-3 text-xs font-black uppercase tracking-wider text-red-400 transition hover:bg-red-900/40 hover:text-red-300 cursor-pointer shadow-sm"
           >
-            <LogOut className="h-3.5 w-3.5" />
+            <FontAwesomeIcon icon={faRightFromBracket} className="h-3 w-3" />
             <span className="hidden sm:inline">Salir</span>
           </button>
         </div>
