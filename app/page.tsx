@@ -14,6 +14,7 @@ import { BitacoraTrabajadorView } from "@/components/BitacoraTrabajadorView";
 import { LoginModal } from "@/components/LoginModal";
 import { CambiarPasswordModal } from "@/components/CambiarPasswordModal";
 import { MiPerfilModal } from "@/components/MiPerfilModal";
+import { TrabajadorSemanaCard } from "@/components/TrabajadorSemanaCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarCheck,
@@ -339,6 +340,19 @@ export default function DashboardPage() {
           <KpiStats
             trabajadores={trabajadoresKpis}
             turnosActivosCount={turnosActivos.length}
+          />
+        )}
+
+        {/* Cuadro de Honor: Trabajador de la Semana */}
+        {tabActiva !== "admin" && (
+          <TrabajadorSemanaCard
+            offset={offset}
+            onVerDetalles={(nombre) =>
+              setModalDetalle({
+                seccionKey: "_todos",
+                trabajadorNombre: nombre,
+              })
+            }
           />
         )}
 

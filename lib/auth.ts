@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { cookies } from "next/headers";
 import { query, queryOne, ensurePerfilColumns } from "./db";
+import { esTrabajadorDeLaSemanaVigente } from "./trabajadorSemana";
 
 export interface UserSession {
   username: string;
@@ -10,6 +11,7 @@ export interface UserSession {
   permisos: string[];
   debe_cambiar_password: boolean;
   discord_id?: string | null;
+  es_trabajador_semana?: boolean;
 }
 
 export function hashPassword(password: string): string {
@@ -68,6 +70,15 @@ export async function getCurrentUser(): Promise<UserSession | null> {
       permisos = [];
     }
 
+    let esCampeon = false;
+    try {
+      esCampeon = await esTrabajadorDeLaSemanaVigente({
+        username: user.username,
+        nombre: user.nombre,
+        discord_id: user.discord_id,
+      });
+    } catch {}
+
     return {
       username: user.username,
       nombre: user.nombre || null,
@@ -76,6 +87,7 @@ export async function getCurrentUser(): Promise<UserSession | null> {
       permisos,
       debe_cambiar_password: Boolean(user.debe_cambiar_password),
       discord_id: user.discord_id || null,
+      es_trabajador_semana: esCampeon,
     };
   } catch (error) {
     console.error("Error al obtener usuario actual:", error);

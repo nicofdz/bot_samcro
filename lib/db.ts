@@ -138,6 +138,20 @@ export async function ensurePerfilColumns(): Promise<void> {
           validado_por TEXT,
           creado_en TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS trabajador_semana (
+          semana_inicio TEXT PRIMARY KEY,
+          semana_fin TEXT NOT NULL,
+          discord_id TEXT,
+          nombre TEXT NOT NULL,
+          username TEXT,
+          avatar_url TEXT,
+          horas REAL DEFAULT 0,
+          ventas REAL DEFAULT 0,
+          servicios INTEGER DEFAULT 0,
+          puntos REAL DEFAULT 0,
+          otorgado_automatico INTEGER DEFAULT 1,
+          creado_en TEXT NOT NULL
+        );
       `);
     } else {
       const db = getSqliteDb();
@@ -172,6 +186,20 @@ export async function ensurePerfilColumns(): Promise<void> {
               foto_url TEXT,
               validado INTEGER DEFAULT 1,
               validado_por TEXT,
+              creado_en TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS trabajador_semana (
+              semana_inicio TEXT PRIMARY KEY,
+              semana_fin TEXT NOT NULL,
+              discord_id TEXT,
+              nombre TEXT NOT NULL,
+              username TEXT,
+              avatar_url TEXT,
+              horas REAL DEFAULT 0,
+              ventas REAL DEFAULT 0,
+              servicios INTEGER DEFAULT 0,
+              puntos REAL DEFAULT 0,
+              otorgado_automatico INTEGER DEFAULT 1,
               creado_en TEXT NOT NULL
             );
           `);

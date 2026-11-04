@@ -318,6 +318,25 @@ export function MiPerfilModal({
             </div>
           </div>
 
+          {/* Distinción Especial: Trabajador de la Semana */}
+          {user.es_trabajador_semana && (
+            <div className="rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent p-4 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black text-lg shadow-md">
+                  👑
+                </div>
+                <div>
+                  <span className="text-[11px] font-black uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                    <span>DISTINCIÓN DE HONOR // TRABAJADOR DE LA SEMANA</span>
+                  </span>
+                  <p className="text-xs text-slate-300 font-medium mt-0.5">
+                    Portas la distinción oficial del Club como el miembro más destacado por tus turnos y ventas acumuladas.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Rango y Secciones (Informativo) */}
           <div className="rounded-xl border border-white/5 bg-black/40 p-3.5 space-y-2">
             <div className="flex items-center justify-between">

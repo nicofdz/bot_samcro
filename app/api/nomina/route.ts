@@ -8,6 +8,7 @@ import {
   formatoFechaHora,
   calcularNominaParaSeccion,
 } from "@/lib/nomina";
+import { obtenerTrabajadorSemana } from "@/lib/trabajadorSemana";
 
 export async function GET(request: Request) {
   try {
@@ -74,7 +75,17 @@ export async function GET(request: Request) {
       if (u.discord_id) asignarRol(u.discord_id.trim());
     }
 
-    // 4. Calcular nómina por sección según permisos
+    // 4. Calcular ranking y Trabajador de la Semana para este periodo
+    let resumenSemana = null;
+    let campeonNombre: string | null = null;
+    try {
+      resumenSemana = await obtenerTrabajadorSemana(offset);
+      campeonNombre = resumenSemana.ganador ? resumenSemana.ganador.nombre : null;
+    } catch (errRank) {
+      console.warn("Aviso al calcular ranking de trabajador de la semana:", errRank);
+    }
+
+    // 5. Calcular nómina por sección según permisos
     const data: Record<string, any> = {};
     for (const seccionKey of Object.keys(SECCIONES)) {
       const tieneAcceso =
@@ -89,12 +100,15 @@ export async function GET(request: Request) {
           finUtcIso,
           checklist,
           trabajadoresActivos,
-          usuariosDb
+          usuariosDb,
+          campeonNombre
         );
       } else {
         data[seccionKey] = [];
       }
     }
+
+    data["_trabajador_semana"] = resumenSemana;
 
     // 5. Turnos activos en tiempo real (solo si semana actual offset == 0)
     if (offset === 0) {

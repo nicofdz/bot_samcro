@@ -88,6 +88,7 @@ export interface TrabajadorNomina {
   pagado: boolean;
   pagado_por?: string | null;
   discord_id?: string;
+  esTrabajadorSemana?: boolean;
 }
 
 export async function calcularNominaParaSeccion(
@@ -96,7 +97,8 @@ export async function calcularNominaParaSeccion(
   finUtcIso: string,
   checklist: Record<string, { pagado_por?: string }>,
   trabajadoresActivos: Record<string, { nombre: string }>,
-  usuariosDb: Record<string, { rol: string }>
+  usuariosDb: Record<string, { rol: string }>,
+  campeonSemanaNombre?: string | null
 ): Promise<TrabajadorNomina[]> {
   const seccionCfg = SECCIONES[seccionKey];
   if (!seccionCfg) return [];
@@ -187,6 +189,11 @@ export async function calcularNominaParaSeccion(
     const checklistKey = `${seccionKey}_${datos.nombre}`;
     const pagoInfo = checklist[checklistKey];
 
+    const esCampeon = campeonSemanaNombre
+      ? datos.nombre.toLowerCase().trim() === campeonSemanaNombre.toLowerCase().trim() ||
+        did === campeonSemanaNombre
+      : false;
+
     resultado.push({
       nombre: datos.nombre,
       horas: Math.round(datos.horas * 100) / 100,
@@ -198,6 +205,7 @@ export async function calcularNominaParaSeccion(
       pagado: Boolean(pagoInfo),
       pagado_por: pagoInfo?.pagado_por || null,
       discord_id: did,
+      esTrabajadorSemana: esCampeon,
     });
   }
 

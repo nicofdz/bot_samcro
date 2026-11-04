@@ -9,6 +9,7 @@ import {
   faRightFromBracket,
   faShieldHalved,
   faUser,
+  faCrown,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface NavbarProps {
@@ -101,6 +102,11 @@ export function Navbar({
                   {(user.nombre || user.username).slice(0, 2).toUpperCase()}
                 </span>
               )}
+              {user.es_trabajador_semana && (
+                <div className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-400 text-slate-950 text-[7px] font-black shadow">
+                  👑
+                </div>
+              )}
             </div>
 
             {/* Nombre y Rango */}
@@ -109,6 +115,12 @@ export function Navbar({
                 <span className="text-xs font-black tracking-wide text-slate-100 group-hover:text-amber-300 transition uppercase">
                   {user.nombre || user.username}
                 </span>
+                {user.es_trabajador_semana && (
+                  <span className="rounded bg-gradient-to-r from-amber-400 to-yellow-500 px-1 py-0.2 text-[8px] font-black uppercase text-slate-950 shadow-sm flex items-center gap-0.5" title="Trabajador de la Semana">
+                    <FontAwesomeIcon icon={faCrown} className="h-2 w-2" />
+                    <span>TOP 1</span>
+                  </span>
+                )}
                 {user.rol === "superadmin" ? (
                   <FontAwesomeIcon icon={faShieldHalved} className="h-3 w-3 text-amber-400" />
                 ) : (

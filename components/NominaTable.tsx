@@ -133,6 +133,14 @@ export function NominaTable({
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-slate-100 font-bold">{t.nombre}</span>
+                            {t.esTrabajadorSemana && (
+                              <span
+                                className="rounded-md bg-gradient-to-r from-amber-400 to-yellow-500 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-slate-950 shadow-sm flex items-center gap-1"
+                                title="Trabajador de la Semana de SAMCRO"
+                              >
+                                👑 TOP SEMANA
+                              </span>
+                            )}
                             {t.esJefe && (
                               <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-400 border border-amber-500/30">
                                 OFICIAL
