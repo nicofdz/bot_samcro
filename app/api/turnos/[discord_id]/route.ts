@@ -45,3 +45,4 @@ export async function DELETE(
     return NextResponse.json({ error: error.message || "Error al finalizar turno" }, { status: 500 });
   }
 }
+

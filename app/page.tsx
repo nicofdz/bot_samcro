@@ -12,7 +12,7 @@ import { TurnosActivosView } from "@/components/TurnosActivosView";
 import { AdminUsuariosView } from "@/components/AdminUsuariosView";
 import { LoginModal } from "@/components/LoginModal";
 import { CambiarPasswordModal } from "@/components/CambiarPasswordModal";
-import { Radio, Users, ShieldAlert, Layers } from "lucide-react";
+import { Radio, Users, ShieldAlert, Layers, Flame, CalendarClock } from "lucide-react";
 
 export default function DashboardPage() {
   const [user, setUser] = useState<UserSession | null>(null);
@@ -107,7 +107,7 @@ export default function DashboardPage() {
             comisiones: 0,
             total: 0,
             esJefe: t.esJefe,
-            pagado: true, // Se considera pagado en consolidado solo si está pagado en todas
+            pagado: true,
             discord_id: t.discord_id,
           };
         }
@@ -135,7 +135,7 @@ export default function DashboardPage() {
     return (datosNomina[tabActiva] as TrabajadorNomina[]) || [];
   }, [tabActiva, datosNomina, trabajadoresConsolidados]);
 
-  // Lista de trabajadores para las métricas superiores (si está en turnos o admin, mostrar el consolidado)
+  // Lista de trabajadores para las métricas superiores
   const trabajadoresKpis = useMemo<TrabajadorNomina[]>(() => {
     if (tabActiva === "turnos" || tabActiva === "admin" || tabActiva === "consolidado") {
       return trabajadoresConsolidados;
@@ -145,7 +145,6 @@ export default function DashboardPage() {
 
   // Manejador de checklist de pago
   const handleTogglePagado = async (nombre: string, nuevoEstado: boolean) => {
-    // Si estamos en consolidado, se actualiza en todas las secciones donde tiene monto
     const seccionesAfectadas =
       tabActiva === "consolidado"
         ? Object.keys(SECCIONES).filter((k) => {
@@ -174,10 +173,12 @@ export default function DashboardPage() {
   // 1. Estado de carga inicial de auth
   if (verificandoAuth) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#090b0e]">
+      <div className="flex min-h-screen items-center justify-center bg-[#07080b]">
         <div className="flex flex-col items-center">
           <div className="h-10 w-10 animate-spin rounded-full border-3 border-amber-500 border-t-transparent" />
-          <span className="mt-4 text-xs font-bold tracking-wider text-amber-500">CARGANDO SAMCRO MC...</span>
+          <span className="mt-4 text-xs font-black tracking-widest text-amber-400 uppercase">
+            CONECTANDO CON MESA SAMCRO...
+          </span>
         </div>
       </div>
     );
@@ -205,7 +206,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#090b0e] text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#07080b] text-slate-100 flex flex-col">
       {/* Navbar Superior */}
       <Navbar
         user={user}
@@ -217,27 +218,33 @@ export default function DashboardPage() {
       />
 
       {/* Contenedor Principal */}
-      <main className="mx-auto flex-1 w-full max-w-7xl p-4 md:p-8 space-y-6">
-        {/* Banner de semana */}
-        <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-gradient-to-r from-amber-950/20 via-slate-900/60 to-slate-900/40 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">
-                Periodo de Liquidación
-              </span>
-              {offset === 0 && (
-                <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
-                  En Curso
-                </span>
-              )}
+      <main className="mx-auto flex-1 w-full max-w-7xl p-3 sm:p-6 md:p-8 space-y-6">
+        {/* Banner de semana estilo Biker Ledger */}
+        <div className="samcro-panel flex flex-col gap-3 rounded-2xl border border-white/10 p-4 sm:flex-row sm:items-center sm:justify-between shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
+              <CalendarClock className="h-5 w-5" />
             </div>
-            <p className="text-sm font-bold text-slate-200 mt-0.5">
-              {datosNomina["_info_semana"]?.rango_texto || "Cargando fechas de cierre..."}
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black uppercase tracking-widest text-amber-400">
+                  Periodo de Liquidación Activo
+                </span>
+                {offset === 0 && (
+                  <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-black text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
+                    Semana en curso
+                  </span>
+                )}
+              </div>
+              <p className="text-sm sm:text-base font-extrabold text-slate-100 mt-0.5">
+                {datosNomina["_info_semana"]?.rango_texto || "Cargando fechas de cierre..."}
+              </p>
+            </div>
           </div>
 
-          <div className="text-xs text-slate-400">
-            Corte semanal automático: <span className="font-bold text-amber-400">Domingos a las 16:00 hrs</span>
+          <div className="rounded-xl bg-black/60 px-3.5 py-2 border border-white/5 text-xs text-slate-400 text-left sm:text-right">
+            <span>Corte semanal automático: </span>
+            <span className="font-black text-amber-400 block sm:inline">Domingos a las 16:00 hrs</span>
           </div>
         </div>
 
@@ -247,21 +254,19 @@ export default function DashboardPage() {
           turnosActivosCount={turnosActivos.length}
         />
 
-        {/* Tabs de Secciones */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none border-b border-white/10">
+        {/* Tabs de Secciones estilo Rocker Patches */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           {tabsDisponibles.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setTabActiva(tab.key)}
-              className={`flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-bold transition ${
-                tabActiva === tab.key
-                  ? "bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20"
-                  : "bg-slate-900/60 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-white/5"
+              className={`rocker-tab flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-xs font-black uppercase tracking-wider cursor-pointer ${
+                tabActiva === tab.key ? "rocker-tab-active" : "text-slate-400"
               }`}
             >
               <span>{tab.label}</span>
               {tab.badge && (
-                <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-emerald-400 radar-live" />
               )}
             </button>
           ))}
@@ -278,12 +283,14 @@ export default function DashboardPage() {
         ) : (
           <div>
             {cargandoNomina ? (
-              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
-                <p className="mt-3 text-xs">Calculando nómina de la semana...</p>
+              <div className="samcro-panel flex flex-col items-center justify-center py-24 text-slate-400 rounded-2xl border border-white/10">
+                <div className="h-10 w-10 animate-spin rounded-full border-3 border-amber-500 border-t-transparent" />
+                <p className="mt-4 text-xs font-black tracking-widest text-amber-400 uppercase">
+                  Auditoría y cálculo de nómina en proceso...
+                </p>
               </div>
             ) : errorNomina ? (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-center text-xs text-red-300">
+              <div className="rounded-2xl border border-red-500/40 bg-red-950/40 p-6 text-center text-xs font-bold text-red-300">
                 {errorNomina}
               </div>
             ) : (
@@ -309,9 +316,15 @@ export default function DashboardPage() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 bg-slate-950/80 px-4 py-4 text-center text-xs text-slate-500">
-        SAMCRO Motorcycle Club — Bitácora y Nómina v3 &bull; Desplegado en Vercel
+      {/* Footer Biker */}
+      <footer className="border-t border-white/10 bg-[#060709] px-4 py-5 text-center text-xs text-slate-500 font-medium">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+          <span className="font-black text-amber-500/80 tracking-wider">SAMCRO MOTORCYCLE CLUB</span>
+          <span className="hidden sm:inline">&bull;</span>
+          <span>Redwood Original 1967 &bull; Nómina & Control v3</span>
+          <span className="hidden sm:inline">&bull;</span>
+          <span className="text-slate-600">Desplegado en Vercel</span>
+        </div>
       </footer>
 
       {/* Modal de Detalles / Desglose */}

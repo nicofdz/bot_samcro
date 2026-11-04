@@ -132,23 +132,23 @@ export function DetallesModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-      <div className="glass-panel relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl border border-white/10 shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-4 backdrop-blur-md">
+      <div className="samcro-panel relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl border border-white/10 shadow-2xl flex flex-col">
         {/* Header Modal */}
-        <div className="flex items-center justify-between border-b border-white/10 bg-slate-900/80 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-white/10 bg-[#0d0f15] px-6 py-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-lg font-extrabold text-slate-100">{trabajadorNombre}</span>
-              <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-bold text-amber-400 border border-amber-500/20">
+              <span className="text-lg font-black tracking-wide text-slate-100">{trabajadorNombre}</span>
+              <span className="rounded-lg bg-amber-500/15 px-2.5 py-0.5 text-xs font-black uppercase tracking-wider text-amber-400 border border-amber-500/30">
                 {seccionKey === "_todos" ? "Todas las secciones" : SECCIONES[seccionKey]?.nombre_visible || seccionKey}
               </span>
             </div>
-            <p className="text-xs text-slate-400">Historial de registros y auditoría de la semana</p>
+            <p className="text-xs text-slate-400 font-medium">Auditoría de registros, turnos y comisiones de la semana</p>
           </div>
 
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-800 text-slate-300 transition hover:bg-slate-700 hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-800 text-slate-300 transition hover:bg-slate-700 hover:text-white cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { UserSession } from "@/lib/auth";
-import { Calendar, KeyRound, LogOut, ShieldCheck, User } from "lucide-react";
+import { Calendar, KeyRound, LogOut, ShieldCheck, User, Activity } from "lucide-react";
 
 interface NavbarProps {
   user: UserSession;
@@ -22,65 +22,82 @@ export function Navbar({
   onOpenPasswordModal,
 }: NavbarProps) {
   return (
-    <header className="glass-panel sticky top-0 z-40 border-b border-white/10 px-4 py-3 md:px-8">
+    <header className="samcro-panel sticky top-0 z-40 border-b border-white/10 px-4 py-3 md:px-8">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-        {/* Brand */}
+        {/* Brand SAMCRO MC */}
         <div className="flex items-center gap-3">
-          <img
-            src="/Sons-of-Anarchy-Logo.png"
-            alt="SAMCRO Logo"
-            className="h-10 w-auto object-contain transition-transform hover:scale-105"
-            onError={(e) => {
-              (e.target as HTMLElement).style.display = "none";
-            }}
-          />
+          <div className="relative group cursor-pointer">
+            <img
+              src="/Sons-of-Anarchy-Logo.png"
+              alt="SAMCRO Logo"
+              className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-[0_2px_8px_rgba(245,158,11,0.3)]"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = "none";
+              }}
+            />
+          </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold tracking-wider text-amber-500">SAMCRO MC</span>
-              <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 border border-amber-500/20">
-                Nómina v3
+              <span className="text-base font-black tracking-wider gold-gradient-text">
+                SAMCRO MC
+              </span>
+              <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-amber-400 border border-amber-500/30 shadow-inner">
+                REDWOOD ORIGINAL
               </span>
             </div>
-            <p className="text-xs text-slate-400">Panel Oficial de Control y Liquidación</p>
+            <p className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+              Club House &bull; Nómina & Bitácoras v3
+            </p>
           </div>
         </div>
 
-        {/* Center: Selector de semanas */}
+        {/* Center: Selector de semanas estilo Biker Ledger */}
         <div className="flex items-center gap-2">
-          <Calendar className="hidden h-4 w-4 text-amber-500 md:block" />
-          <select
-            value={currentOffset}
-            onChange={(e) => onSelectOffset(Number(e.target.value))}
-            className="rounded-lg border border-white/10 bg-slate-900/90 px-3 py-1.5 text-xs font-semibold text-slate-200 outline-none transition focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50"
-          >
-            {semanas.map((s) => (
-              <option key={s.offset} value={s.offset}>
-                {s.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative flex items-center">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-amber-400 pointer-events-none" />
+            <select
+              value={currentOffset}
+              onChange={(e) => onSelectOffset(Number(e.target.value))}
+              className="appearance-none rounded-xl border border-amber-500/30 bg-black/80 py-1.5 pl-8 pr-8 text-xs font-bold text-amber-200 outline-none transition hover:border-amber-500/60 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 cursor-pointer shadow-inner"
+            >
+              {semanas.map((s) => (
+                <option key={s.offset} value={s.offset} className="bg-[#0f1218] text-slate-100 font-semibold py-1">
+                  {s.label}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-amber-400">
+              ▼
+            </span>
+          </div>
+
+          {/* Pill de conexión activa */}
+          <div className="hidden lg:flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-400 border border-emerald-500/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span>DISCLOUD ONLINE</span>
+          </div>
         </div>
 
         {/* User profile & actions */}
         <div className="flex items-center gap-3">
           <div className="hidden text-right sm:block">
             <div className="flex items-center justify-end gap-1.5">
-              <span className="text-xs font-bold text-slate-200">{user.username}</span>
+              <span className="text-xs font-black tracking-wide text-slate-100 uppercase">{user.username}</span>
               {user.rol === "superadmin" ? (
-                <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
+                <ShieldCheck className="h-4 w-4 text-amber-400" />
               ) : (
                 <User className="h-3.5 w-3.5 text-emerald-400" />
               )}
             </div>
-            <span className="text-[10px] font-semibold uppercase text-slate-400">
-              {user.rol === "superadmin" ? "Super Administrador" : "Jefe de Área"}
+            <span className="rounded bg-black/60 px-1.5 py-0.2 text-[9px] font-extrabold tracking-wider uppercase text-amber-400/90 border border-white/5">
+              {user.rol === "superadmin" ? "Mesa Directiva // Superadmin" : "Jefe de Área // Oficial"}
             </span>
           </div>
 
           <button
             onClick={onOpenPasswordModal}
             title="Cambiar Contraseña"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-800/80 text-slate-300 transition hover:border-amber-500/40 hover:bg-slate-700 hover:text-amber-400"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-slate-800/80 text-slate-300 transition hover:border-amber-500/40 hover:bg-slate-700 hover:text-amber-400 cursor-pointer shadow-sm"
           >
             <KeyRound className="h-4 w-4" />
           </button>
@@ -88,7 +105,7 @@ export function Navbar({
           <button
             onClick={onLogout}
             title="Cerrar Sesión"
-            className="flex h-8 items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 text-xs font-bold text-red-400 transition hover:bg-red-500/20 hover:text-red-300"
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-950/30 px-3 text-xs font-black uppercase tracking-wider text-red-400 transition hover:bg-red-900/40 hover:text-red-300 cursor-pointer shadow-sm"
           >
             <LogOut className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Salir</span>
