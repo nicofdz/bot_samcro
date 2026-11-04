@@ -35,6 +35,13 @@ export const SECCIONES: Record<string, SeccionConfig> = {
     comision_servicio: 0.35,
     usa_sueldo_base: false,
   },
+  coleccionables: {
+    nombre_visible: "Coleccionables",
+    rol_jefe: ["Encargado de Coleccionables", "Jefe Coleccionables", "Liderazgo SAMCRO", "Dueños", "Sub dueño"],
+    tarifa_hora: 0,
+    comision_servicio: 0.10,
+    usa_sueldo_base: false,
+  },
 };
 
 export const SUELDO_BASE_TRABAJADOR = 10000;
@@ -46,6 +53,7 @@ export const PORCENTAJES_JEFE: Record<string, number> = {
   tatuajes: 0.40,
   bar: 0.50,
   show: 0.40,
+  coleccionables: 0.10,
 };
 
 export const DIA_CIERRE_SEMANA = 6;

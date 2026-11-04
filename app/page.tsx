@@ -23,6 +23,7 @@ import {
   faTowerBroadcast,
   faGear,
   faCircleNotch,
+  faGem,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Mapeo de iconos Font Awesome por sección
@@ -32,6 +33,7 @@ const ICONOS_SECCION: Record<string, any> = {
   bar: faBeerMugEmpty,
   tatuajes: faPenNib,
   show: faMusic,
+  coleccionables: faGem,
   turnos: faTowerBroadcast,
   admin: faGear,
 };
