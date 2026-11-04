@@ -255,6 +255,16 @@ export default function DashboardPage() {
     return <LoginModal onLoginSuccess={(u) => setUser(u)} />;
   }
 
+  // Verificar si el usuario tiene permisos de directiva o visualización de áreas de nómina
+  const tienePermisosAreas = Boolean(
+    user && (
+      user.rol === "superadmin" ||
+      user.rol === "jefe" ||
+      user.permisos.includes("consolidado") ||
+      Object.keys(SECCIONES).some((s) => user.permisos.includes(s))
+    )
+  );
+
   // Lista de tabs permitidas para este usuario (con iconos Font Awesome)
   const tabsDisponibles = [
     ...(user.rol === "trabajador"
@@ -269,12 +279,14 @@ export default function DashboardPage() {
     ...(user.rol !== "trabajador"
       ? [{ key: "bitacora", label: "Mi Bitácora", icon: ICONOS_SECCION.bitacora }]
       : []),
-    {
-      key: "turnos",
-      label: `Turnos en Vivo (${turnosActivos.length})`,
-      icon: ICONOS_SECCION.turnos,
-      badge: turnosActivos.length > 0,
-    },
+    ...(tienePermisosAreas
+      ? [{
+          key: "turnos",
+          label: `Turnos en Vivo (${turnosActivos.length})`,
+          icon: ICONOS_SECCION.turnos,
+          badge: turnosActivos.length > 0,
+        }]
+      : []),
     ...(user.rol === "superadmin" ? [{ key: "admin", label: "Administración", icon: ICONOS_SECCION.admin }] : []),
   ];
 
@@ -322,35 +334,39 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* KPIs de Métricas Superiores */}
-        <KpiStats
-          trabajadores={trabajadoresKpis}
-          turnosActivosCount={turnosActivos.length}
-        />
+        {/* KPIs de Métricas Superiores (solo para directiva o usuarios con acceso a áreas de nómina) */}
+        {tienePermisosAreas && (
+          <KpiStats
+            trabajadores={trabajadoresKpis}
+            turnosActivosCount={turnosActivos.length}
+          />
+        )}
 
-        {/* Tabs de Secciones estilo Rocker Patches con Font Awesome */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          {tabsDisponibles.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setTabActiva(tab.key)}
-              className={`rocker-tab flex items-center gap-2 whitespace-nowrap rounded-xl px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs font-black uppercase tracking-wider cursor-pointer ${
-                tabActiva === tab.key ? "rocker-tab-active" : "text-slate-400"
-              }`}
-            >
-              {tab.icon && (
-                <FontAwesomeIcon
-                  icon={tab.icon}
-                  className={`h-3 w-3 ${tabActiva === tab.key ? "text-amber-300" : "text-slate-400"}`}
-                />
-              )}
-              <span>{tab.label}</span>
-              {tab.badge && (
-                <span className="h-2 w-2 rounded-full bg-emerald-400 radar-live" />
-              )}
-            </button>
-          ))}
-        </div>
+        {/* Tabs de Secciones estilo Rocker Patches con Font Awesome (solo si hay más de 1 tab disponible) */}
+        {tabsDisponibles.length > 1 && (
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            {tabsDisponibles.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setTabActiva(tab.key)}
+                className={`rocker-tab flex items-center gap-2 whitespace-nowrap rounded-xl px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs font-black uppercase tracking-wider cursor-pointer ${
+                  tabActiva === tab.key ? "rocker-tab-active" : "text-slate-400"
+                }`}
+              >
+                {tab.icon && (
+                  <FontAwesomeIcon
+                    icon={tab.icon}
+                    className={`h-3 w-3 ${tabActiva === tab.key ? "text-amber-300" : "text-slate-400"}`}
+                  />
+                )}
+                <span>{tab.label}</span>
+                {tab.badge && (
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 radar-live" />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Vista según la pestaña activa */}
         {tabActiva === "bitacora" ? (
