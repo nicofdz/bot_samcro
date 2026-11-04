@@ -51,12 +51,27 @@ export async function GET(request: Request) {
     }
 
     // 3. Usuarios registrados para detectar jefes
-    const usuarios = await query<{ username: string; rol: string }>(
-      "SELECT username, rol FROM usuarios"
-    );
+    const usuarios = await query<{
+      username: string;
+      nombre: string | null;
+      discord_id: string | null;
+      rol: string;
+    }>("SELECT username, nombre, discord_id, rol FROM usuarios");
     const usuariosDb: Record<string, { rol: string }> = {};
     for (const u of usuarios) {
-      usuariosDb[u.username.toLowerCase()] = { rol: u.rol };
+      const rol = u.rol;
+      const asignarRol = (clave: string) => {
+        const actual = usuariosDb[clave]?.rol;
+        if (!actual || actual === "trabajador") {
+          usuariosDb[clave] = { rol };
+        } else if (actual === "jefe" && rol === "superadmin") {
+          usuariosDb[clave] = { rol };
+        }
+      };
+
+      if (u.username) asignarRol(u.username.toLowerCase().trim());
+      if (u.nombre) asignarRol(u.nombre.toLowerCase().trim());
+      if (u.discord_id) asignarRol(u.discord_id.trim());
     }
 
     // 4. Calcular nómina por sección según permisos

@@ -61,6 +61,12 @@ export function DetallesModal({
   const [inputHoras, setInputHoras] = useState<number>(0);
   const [guardandoHoras, setGuardandoHoras] = useState(false);
 
+  // Estados para diálogo de editar servicio (monto / comisión)
+  const [editandoServicio, setEditandoServicio] = useState<{ id: number; monto: number; comision: number } | null>(null);
+  const [inputMonto, setInputMonto] = useState<number>(0);
+  const [inputComision, setInputComision] = useState<number>(0);
+  const [guardandoServicio, setGuardandoServicio] = useState(false);
+
   // Estado para visor de fotos
   const [fotoAmpliada, setFotoAmpliada] = useState<string | null>(null);
 
@@ -131,6 +137,33 @@ export function DetallesModal({
       console.error(e);
     } finally {
       setGuardandoHoras(false);
+    }
+  };
+
+  const handleAbrirEditarServicio = (id: number, montoActual: number, comisionActual: number) => {
+    setEditandoServicio({ id, monto: montoActual, comision: comisionActual });
+    setInputMonto(montoActual);
+    setInputComision(comisionActual);
+  };
+
+  const handleGuardarServicio = async () => {
+    if (!editandoServicio) return;
+    setGuardandoServicio(true);
+    try {
+      const res = await fetch(`/api/registros/${editandoServicio.id}/servicio`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ monto: inputMonto, comision: inputComision }),
+      });
+      if (res.ok) {
+        setEditandoServicio(null);
+        cargarDetalles();
+        onActualizacion();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setGuardandoServicio(false);
     }
   };
 
@@ -271,7 +304,12 @@ export function DetallesModal({
                               Cobro: {formatPeso(r.monto)}
                             </div>
                             <div className="text-sm font-extrabold text-purple-400">
-                              Comisión: {formatPeso(r.comision)}
+                              Comisión: {formatPeso(r.comision)}{" "}
+                              {r.monto > 0 && (
+                                <span className="text-[10px] font-bold text-purple-300/80">
+                                  ({Math.round((r.comision / r.monto) * 100)}%)
+                                </span>
+                              )}
                             </div>
                           </div>
                         )}
@@ -302,6 +340,17 @@ export function DetallesModal({
                                 onClick={() => handleAbrirEditarHoras(r.id as number, r.horas)}
                                 title="Editar horas del turno"
                                 className="flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-slate-800 px-2.5 text-xs font-bold text-slate-300 hover:border-amber-500/40 hover:bg-slate-700 hover:text-amber-400 cursor-pointer"
+                              >
+                                <FontAwesomeIcon icon={faPen} className="h-3 w-3" />
+                                <span className="hidden sm:inline">Ajustar</span>
+                              </button>
+                            )}
+
+                            {r.tipo === "servicio" && !esAnulado && (
+                              <button
+                                onClick={() => handleAbrirEditarServicio(r.id as number, r.monto, r.comision)}
+                                title="Editar cobro o comisión del servicio"
+                                className="flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-slate-800 px-2.5 text-xs font-bold text-slate-300 hover:border-purple-500/40 hover:bg-slate-700 hover:text-purple-400 cursor-pointer"
                               >
                                 <FontAwesomeIcon icon={faPen} className="h-3 w-3" />
                                 <span className="hidden sm:inline">Ajustar</span>
@@ -378,6 +427,78 @@ export function DetallesModal({
               >
                 Cancelar
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Diálogo editar cobro y comisión de servicio */}
+        {editandoServicio && (
+          <div className="border-t border-white/10 bg-[#0d0f15] p-4 flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="text-xs text-slate-300">
+                Ajustando cobro y comisión del registro <span className="font-bold text-purple-400">#{editandoServicio.id}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-400">
+                <span>Aplicar % rápido al cobro:</span>
+                {[0.1, 0.3, 0.35, 0.4, 0.5].map((pct) => (
+                  <button
+                    key={pct}
+                    type="button"
+                    onClick={() => setInputComision(Math.round(inputMonto * pct))}
+                    className="rounded bg-slate-800 px-2 py-0.5 font-bold text-amber-400 hover:bg-slate-700 hover:text-white border border-white/10 transition cursor-pointer"
+                  >
+                    {Math.round(pct * 100)}%
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-400">Cobro ($):</span>
+                <input
+                  type="number"
+                  step="1000"
+                  min="0"
+                  value={inputMonto}
+                  onChange={(e) => {
+                    const m = Math.max(0, parseInt(e.target.value) || 0);
+                    setInputMonto(m);
+                  }}
+                  className="w-28 rounded-lg border border-white/15 bg-black px-2 py-1.5 text-center text-xs font-bold text-slate-200 outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-400">Comisión ($):</span>
+                <input
+                  type="number"
+                  step="500"
+                  min="0"
+                  value={inputComision}
+                  onChange={(e) => setInputComision(Math.max(0, parseInt(e.target.value) || 0))}
+                  className="w-28 rounded-lg border border-white/15 bg-black px-2 py-1.5 text-center text-xs font-bold text-purple-300 outline-none focus:border-purple-500"
+                />
+                <span className="text-xs font-bold text-purple-400/90">
+                  ({inputMonto > 0 ? Math.round((inputComision / inputMonto) * 100) : 0}%)
+                </span>
+              </div>
+
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={handleGuardarServicio}
+                  disabled={guardandoServicio}
+                  className="rounded-lg bg-purple-600 px-4 py-1.5 text-xs font-black uppercase text-white hover:bg-purple-500 transition cursor-pointer"
+                >
+                  {guardandoServicio ? "Guardando..." : "Guardar Ajuste"}
+                </button>
+                <button
+                  onClick={() => setEditandoServicio(null)}
+                  className="rounded-lg border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-white cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         )}
