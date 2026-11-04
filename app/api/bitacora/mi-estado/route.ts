@@ -163,3 +163,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message || "Error al obtener estado" }, { status: 500 });
   }
 }
+

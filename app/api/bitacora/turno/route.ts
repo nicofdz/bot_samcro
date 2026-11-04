@@ -125,3 +125,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message || "Error al procesar turno" }, { status: 500 });
   }
 }
+

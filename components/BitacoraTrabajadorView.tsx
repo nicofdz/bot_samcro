@@ -1068,3 +1068,4 @@ export function BitacoraTrabajadorView({ user, offset, onActualizacion }: Bitaco
     </div>
   );
 }
+
