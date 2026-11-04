@@ -135,6 +135,14 @@ export default function DashboardPage() {
     return (datosNomina[tabActiva] as TrabajadorNomina[]) || [];
   }, [tabActiva, datosNomina, trabajadoresConsolidados]);
 
+  // Lista de trabajadores para las métricas superiores (si está en turnos o admin, mostrar el consolidado)
+  const trabajadoresKpis = useMemo<TrabajadorNomina[]>(() => {
+    if (tabActiva === "turnos" || tabActiva === "admin" || tabActiva === "consolidado") {
+      return trabajadoresConsolidados;
+    }
+    return trabajadoresActuales;
+  }, [tabActiva, trabajadoresConsolidados, trabajadoresActuales]);
+
   // Manejador de checklist de pago
   const handleTogglePagado = async (nombre: string, nuevoEstado: boolean) => {
     // Si estamos en consolidado, se actualiza en todas las secciones donde tiene monto
@@ -235,7 +243,7 @@ export default function DashboardPage() {
 
         {/* KPIs de Métricas Superiores */}
         <KpiStats
-          trabajadores={trabajadoresActuales}
+          trabajadores={trabajadoresKpis}
           turnosActivosCount={turnosActivos.length}
         />
 
@@ -261,7 +269,10 @@ export default function DashboardPage() {
 
         {/* Vista según la pestaña activa */}
         {tabActiva === "turnos" ? (
-          <TurnosActivosView turnos={turnosActivos} />
+          <TurnosActivosView
+            turnos={turnosActivos}
+            onTurnoFinalizado={() => cargarNomina()}
+          />
         ) : tabActiva === "admin" ? (
           <AdminUsuariosView />
         ) : (
