@@ -101,17 +101,15 @@ export async function resolverIdentidadTrabajador(user: {
   const discordIdFinal = user.discord_id || `web_${user.username.toLowerCase()}`;
 
   try {
-    if (isPostgres()) {
-      await query(
-        `INSERT INTO canales_trabajador (discord_id, nombre, canal_id)
-         VALUES ($1, $2, 'web')
-         ON CONFLICT (discord_id) DO UPDATE SET nombre = EXCLUDED.nombre`,
-        [discordIdFinal, nombreFinal]
-      );
+    const existeCanal = await queryOne(
+      "SELECT discord_id FROM canales_trabajador WHERE discord_id = $1",
+      [discordIdFinal]
+    );
+    if (existeCanal) {
+      await query("UPDATE canales_trabajador SET nombre = $1 WHERE discord_id = $2", [nombreFinal, discordIdFinal]);
     } else {
       await query(
-        `INSERT OR REPLACE INTO canales_trabajador (discord_id, nombre, canal_id)
-         VALUES ($1, $2, 'web')`,
+        "INSERT INTO canales_trabajador (discord_id, nombre, canal_id) VALUES ($1, $2, 'web')",
         [discordIdFinal, nombreFinal]
       );
     }

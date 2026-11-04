@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, hashPassword } from "@/lib/auth";
-import { query, ensurePerfilColumns, isPostgres } from "@/lib/db";
+import { query, queryOne, ensurePerfilColumns, isPostgres } from "@/lib/db";
 
 export async function GET() {
   try {
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const username = (body.username || "").trim();
     const password = body.password || "";
-    const rol = body.rol || "jefe";
+    const rol = body.rol || "trabajador";
     const permisos = body.permisos || [];
     const nombre = (body.nombre || "").trim() || null;
     const discord_id = (body.discord_id || "").trim() || null;
@@ -83,29 +83,31 @@ export async function POST(request: Request) {
          discord_id = COALESCE(EXCLUDED.discord_id, usuarios.discord_id)`,
         [username, passwordHash, rol, JSON.stringify(permisos), nowIso, nombre, discord_id]
       );
-
-      // Si tiene nombre y discord_id, asegurar en canales_trabajador
-      if (nombre && discord_id) {
-        await query(
-          `INSERT INTO canales_trabajador (discord_id, nombre, canal_id)
-           VALUES ($1, $2, 'web')
-           ON CONFLICT (discord_id) DO UPDATE SET nombre = EXCLUDED.nombre`,
-          [discord_id, nombre]
-        );
-      }
     } else {
       await query(
         `INSERT OR REPLACE INTO usuarios (username, password_hash, rol, permisos, debe_cambiar_password, creado_en, nombre, discord_id)
          VALUES ($1, $2, $3, $4, 1, $5, $6, $7)`,
         [username, passwordHash, rol, JSON.stringify(permisos), nowIso, nombre, discord_id]
       );
+    }
 
-      if (nombre && discord_id) {
-        await query(
-          `INSERT OR REPLACE INTO canales_trabajador (discord_id, nombre, canal_id)
-           VALUES ($1, $2, 'web')`,
-          [discord_id, nombre]
+    // Sincronizar en canales_trabajador de forma segura (sin depender de ON CONFLICT)
+    if (nombre && discord_id) {
+      try {
+        const existeCanal = await queryOne(
+          "SELECT discord_id FROM canales_trabajador WHERE discord_id = $1",
+          [discord_id]
         );
+        if (existeCanal) {
+          await query("UPDATE canales_trabajador SET nombre = $1 WHERE discord_id = $2", [nombre, discord_id]);
+        } else {
+          await query(
+            "INSERT INTO canales_trabajador (discord_id, nombre, canal_id) VALUES ($1, $2, 'web')",
+            [discord_id, nombre]
+          );
+        }
+      } catch (errCanal) {
+        console.warn("Aviso al sincronizar canal trabajador:", errCanal);
       }
     }
 

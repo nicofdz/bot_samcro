@@ -74,24 +74,24 @@ export async function PUT(request: Request) {
         [nombre, avatar_url, discord_id, usernameFinal]
       );
 
-      // Sincronizar en canales_trabajador
+      // Sincronizar en canales_trabajador (sin depender de ON CONFLICT)
       if (nombre) {
         try {
-          if (isPostgres()) {
-            await query(
-              `INSERT INTO canales_trabajador (discord_id, nombre, canal_id)
-               VALUES ($1, $2, 'web')
-               ON CONFLICT (discord_id) DO UPDATE SET nombre = EXCLUDED.nombre`,
-              [discord_id, nombre]
-            );
+          const existeCanal = await queryOne(
+            "SELECT discord_id FROM canales_trabajador WHERE discord_id = $1",
+            [discord_id]
+          );
+          if (existeCanal) {
+            await query("UPDATE canales_trabajador SET nombre = $1 WHERE discord_id = $2", [nombre, discord_id]);
           } else {
             await query(
-              `INSERT OR REPLACE INTO canales_trabajador (discord_id, nombre, canal_id)
-               VALUES ($1, $2, 'web')`,
+              "INSERT INTO canales_trabajador (discord_id, nombre, canal_id) VALUES ($1, $2, 'web')",
               [discord_id, nombre]
             );
           }
-        } catch {}
+        } catch (errCanal) {
+          console.warn("Aviso al sincronizar canal trabajador:", errCanal);
+        }
       }
     } else {
       await query(
