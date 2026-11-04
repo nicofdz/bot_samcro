@@ -1,9 +1,11 @@
 import crypto from "crypto";
 import { cookies } from "next/headers";
-import { query, queryOne } from "./db";
+import { query, queryOne, ensurePerfilColumns } from "./db";
 
 export interface UserSession {
   username: string;
+  nombre?: string | null;
+  avatar_url?: string | null;
   rol: "superadmin" | "jefe";
   permisos: string[];
   debe_cambiar_password: boolean;
@@ -42,12 +44,16 @@ export async function getCurrentUser(): Promise<UserSession | null> {
 
     if (!session) return null;
 
+    await ensurePerfilColumns();
+
     const user = await queryOne<{
       username: string;
+      nombre: string | null;
+      avatar_url: string | null;
       rol: "superadmin" | "jefe";
       permisos: string;
       debe_cambiar_password: number;
-    }>("SELECT username, rol, permisos, debe_cambiar_password FROM usuarios WHERE username = $1", [
+    }>("SELECT username, nombre, avatar_url, rol, permisos, debe_cambiar_password FROM usuarios WHERE username = $1", [
       session.username,
     ]);
 
@@ -62,6 +68,8 @@ export async function getCurrentUser(): Promise<UserSession | null> {
 
     return {
       username: user.username,
+      nombre: user.nombre || null,
+      avatar_url: user.avatar_url || null,
       rol: user.rol,
       permisos,
       debe_cambiar_password: Boolean(user.debe_cambiar_password),

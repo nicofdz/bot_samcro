@@ -106,3 +106,30 @@ export async function queryOne<T = any>(text: string, params: any[] = []): Promi
   const rows = await query<T>(text, params);
   return rows.length > 0 ? rows[0] : null;
 }
+
+let migrationPerfilRan = false;
+
+export async function ensurePerfilColumns(): Promise<void> {
+  if (migrationPerfilRan) return;
+  try {
+    if (isPostgres()) {
+      await query(`
+        ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nombre TEXT;
+        ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+      `);
+    } else {
+      const db = getSqliteDb();
+      if (db) {
+        try {
+          db.exec("ALTER TABLE usuarios ADD COLUMN nombre TEXT;");
+        } catch {}
+        try {
+          db.exec("ALTER TABLE usuarios ADD COLUMN avatar_url TEXT;");
+        } catch {}
+      }
+    }
+    migrationPerfilRan = true;
+  } catch (err) {
+    console.error("Error asegurando columnas de perfil:", err);
+  }
+}

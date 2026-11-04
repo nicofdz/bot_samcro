@@ -12,6 +12,7 @@ import { TurnosActivosView } from "@/components/TurnosActivosView";
 import { AdminUsuariosView } from "@/components/AdminUsuariosView";
 import { LoginModal } from "@/components/LoginModal";
 import { CambiarPasswordModal } from "@/components/CambiarPasswordModal";
+import { MiPerfilModal } from "@/components/MiPerfilModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarCheck,
@@ -59,6 +60,7 @@ export default function DashboardPage() {
     trabajadorNombre: string;
   } | null>(null);
   const [mostrarPasswordModal, setMostrarPasswordModal] = useState(false);
+  const [mostrarPerfilModal, setMostrarPerfilModal] = useState(false);
 
   // 1. Verificar sesión activa al inicio
   useEffect(() => {
@@ -275,6 +277,7 @@ export default function DashboardPage() {
         onSelectOffset={(o) => setOffset(o)}
         onLogout={handleLogout}
         onOpenPasswordModal={() => setMostrarPasswordModal(true)}
+        onOpenPerfilModal={() => setMostrarPerfilModal(true)}
       />
 
       {/* Contenedor Principal */}
@@ -399,6 +402,21 @@ export default function DashboardPage() {
           offset={offset}
           onClose={() => setModalDetalle(null)}
           onActualizacion={() => cargarNomina()}
+        />
+      )}
+
+      {/* Modal Mi Perfil */}
+      {mostrarPerfilModal && (
+        <MiPerfilModal
+          user={user}
+          onClose={() => setMostrarPerfilModal(false)}
+          onUserUpdated={(updatedUser) => {
+            setUser(updatedUser);
+          }}
+          onOpenPasswordModal={() => {
+            setMostrarPerfilModal(false);
+            setMostrarPasswordModal(true);
+          }}
         />
       )}
 

@@ -18,6 +18,7 @@ interface NavbarProps {
   onSelectOffset: (offset: number) => void;
   onLogout: () => void;
   onOpenPasswordModal: () => void;
+  onOpenPerfilModal: () => void;
 }
 
 export function Navbar({
@@ -27,6 +28,7 @@ export function Navbar({
   onSelectOffset,
   onLogout,
   onOpenPasswordModal,
+  onOpenPerfilModal,
 }: NavbarProps) {
   return (
     <header className="samcro-panel sticky top-0 z-40 border-b border-white/10 px-4 py-3 md:px-8">
@@ -83,21 +85,47 @@ export function Navbar({
         </div>
 
         {/* User profile & actions */}
-        <div className="flex items-center gap-3">
-          <div className="hidden text-right sm:block">
-            <div className="flex items-center justify-end gap-1.5">
-              <span className="text-xs font-black tracking-wide text-slate-100 uppercase">{user.username}</span>
-              {user.rol === "superadmin" ? (
-                <FontAwesomeIcon icon={faShieldHalved} className="h-3.5 w-3.5 text-amber-400" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Chip de Mi Perfil interactivo con foto */}
+          <button
+            onClick={onOpenPerfilModal}
+            title="Abrir Mi Perfil (Editar foto, nombre y usuario)"
+            className="group flex items-center gap-2.5 rounded-xl border border-white/10 bg-black/50 p-1.5 sm:px-3 sm:py-1.5 transition hover:border-amber-500/50 hover:bg-black/80 cursor-pointer text-left shadow-sm"
+          >
+            {/* Avatar circular */}
+            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-amber-500/40 bg-gradient-to-br from-amber-600/30 to-black shadow-inner">
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt={user.username} className="h-full w-full object-cover" />
               ) : (
-                <FontAwesomeIcon icon={faUser} className="h-3 w-3 text-emerald-400" />
+                <span className="text-xs font-black text-amber-300">
+                  {(user.nombre || user.username).slice(0, 2).toUpperCase()}
+                </span>
               )}
             </div>
-            <span className="rounded bg-black/60 px-1.5 py-0.2 text-[9px] font-extrabold tracking-wider uppercase text-amber-400/90 border border-white/5">
-              {user.rol === "superadmin" ? "Mesa Directiva // Superadmin" : "Jefe de Área // Oficial"}
-            </span>
-          </div>
 
+            {/* Nombre y Rango */}
+            <div className="hidden sm:block">
+              <div className="flex items-center gap-1.5 leading-tight">
+                <span className="text-xs font-black tracking-wide text-slate-100 group-hover:text-amber-300 transition uppercase">
+                  {user.nombre || user.username}
+                </span>
+                {user.rol === "superadmin" ? (
+                  <FontAwesomeIcon icon={faShieldHalved} className="h-3 w-3 text-amber-400" />
+                ) : (
+                  <FontAwesomeIcon icon={faUser} className="h-2.5 w-2.5 text-emerald-400" />
+                )}
+              </div>
+              <div className="flex items-center gap-1 text-[9px] text-slate-400 font-semibold uppercase mt-0.5">
+                <span>@{user.username}</span>
+                <span>&bull;</span>
+                <span className="text-amber-400/90 font-bold">
+                  {user.rol === "superadmin" ? "Mesa Directiva" : "Oficial"}
+                </span>
+              </div>
+            </div>
+          </button>
+
+          {/* Botón cambiar password */}
           <button
             onClick={onOpenPasswordModal}
             title="Cambiar Contraseña"
@@ -106,6 +134,7 @@ export function Navbar({
             <FontAwesomeIcon icon={faKey} className="h-3.5 w-3.5" />
           </button>
 
+          {/* Botón Salir */}
           <button
             onClick={onLogout}
             title="Cerrar Sesión"

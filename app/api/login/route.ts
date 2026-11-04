@@ -15,6 +15,8 @@ export async function POST(request: Request) {
 
     const user = await queryOne<{
       username: string;
+      nombre?: string | null;
+      avatar_url?: string | null;
       password_hash: string;
       rol: string;
       permisos: string;
@@ -44,6 +46,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       username: user.username,
+      nombre: user.nombre || null,
+      avatar_url: user.avatar_url || null,
       rol: user.rol,
       permisos,
       debe_cambiar_password: Boolean(user.debe_cambiar_password),
