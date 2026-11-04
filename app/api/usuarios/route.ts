@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, hashPassword } from "@/lib/auth";
-import { query } from "@/lib/db";
+import { query, ensurePerfilColumns } from "@/lib/db";
 
 export async function GET() {
   try {
@@ -9,13 +9,17 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
+    await ensurePerfilColumns();
+
     const rows = await query<{
       username: string;
+      nombre: string | null;
+      avatar_url: string | null;
       rol: string;
       permisos: string;
       debe_cambiar_password: number;
       creado_en: string;
-    }>("SELECT username, rol, permisos, debe_cambiar_password, creado_en FROM usuarios ORDER BY username ASC");
+    }>("SELECT username, nombre, avatar_url, rol, permisos, debe_cambiar_password, creado_en FROM usuarios ORDER BY username ASC");
 
     const usuarios = rows.map((u) => {
       let permisos: string[] = [];
@@ -26,6 +30,8 @@ export async function GET() {
       }
       return {
         username: u.username,
+        nombre: u.nombre || null,
+        avatar_url: u.avatar_url || null,
         rol: u.rol,
         permisos,
         debe_cambiar_password: Boolean(u.debe_cambiar_password),

@@ -9,10 +9,15 @@ import {
   faTrashCan,
   faLock,
   faCircleNotch,
+  faEye,
+  faXmark,
+  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface Usuario {
   username: string;
+  nombre?: string | null;
+  avatar_url?: string | null;
   rol: "superadmin" | "jefe";
   permisos: string[];
   debe_cambiar_password: boolean;
@@ -23,6 +28,9 @@ export function AdminUsuariosView() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Visor de foto ampliada
+  const [fotoAmpliada, setFotoAmpliada] = useState<{ url: string; nombre: string } | null>(null);
 
   // Formulario nuevo usuario
   const [nuevoUsername, setNuevoUsername] = useState("");
@@ -114,8 +122,9 @@ export function AdminUsuariosView() {
 
   return (
     <div className="space-y-6">
+      {/* Encabezado */}
       <div>
-        <h2 className="text-base font-black tracking-wide text-slate-100 flex items-center gap-2 uppercase">
+        <h2 className="text-base font-black uppercase tracking-wider text-slate-100 flex items-center gap-2">
           <FontAwesomeIcon icon={faUsers} className="h-4 w-4 text-amber-500" />
           Administración de Cuentas y Accesos
         </h2>
@@ -125,65 +134,73 @@ export function AdminUsuariosView() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Formulario Nuevo Usuario */}
-        <div className="samcro-panel col-span-1 rounded-2xl border border-white/10 p-5 shadow-xl">
-          <h3 className="text-sm font-black uppercase tracking-wider text-slate-100 flex items-center gap-2 mb-4">
-            <FontAwesomeIcon icon={faUserPlus} className="h-3.5 w-3.5 text-amber-400" />
+        {/* Formulario Crear Usuario */}
+        <div className="samcro-card col-span-1 rounded-2xl border border-white/10 p-5 shadow-xl">
+          <h3 className="text-sm font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
+            <FontAwesomeIcon icon={faUserPlus} className="h-3.5 w-3.5" />
             Crear Acceso de Jefatura
           </h3>
 
-          <form onSubmit={handleCrearUsuario} className="space-y-3.5">
+          <form onSubmit={handleCrearUsuario} className="mt-4 space-y-4">
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Usuario</label>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                Usuario
+              </label>
               <input
                 type="text"
                 required
                 value={nuevoUsername}
                 onChange={(e) => setNuevoUsername(e.target.value)}
-                placeholder="ej: nico_mecanica"
-                className="mt-1 w-full rounded-xl border border-white/10 bg-black/70 px-3 py-2 text-xs font-semibold text-slate-200 outline-none focus:border-amber-500"
+                placeholder="Ej. KIMBO"
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-xs font-semibold text-slate-200 outline-none transition focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"
               />
             </div>
 
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Contraseña Inicial</label>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                Contraseña Inicial
+              </label>
               <input
                 type="password"
                 required
                 value={nuevoPassword}
                 onChange={(e) => setNuevoPassword(e.target.value)}
                 placeholder="••••••••"
-                className="mt-1 w-full rounded-xl border border-white/10 bg-black/70 px-3 py-2 text-xs font-semibold text-slate-200 outline-none focus:border-amber-500"
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-2 text-xs font-semibold text-slate-200 outline-none transition focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"
               />
             </div>
 
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Rol de Acceso</label>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                Rol de Acceso
+              </label>
               <select
                 value={nuevoRol}
-                onChange={(e) => setNuevoRol(e.target.value as any)}
-                className="mt-1 w-full rounded-xl border border-white/10 bg-black/70 px-3 py-2 text-xs font-semibold text-slate-200 outline-none focus:border-amber-500 cursor-pointer"
+                onChange={(e) => setNuevoRol(e.target.value as "jefe" | "superadmin")}
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/60 px-3 py-2 text-xs font-semibold text-slate-200 outline-none transition focus:border-amber-500"
               >
                 <option value="jefe">Jefe de Área (Oficial)</option>
-                <option value="superadmin">Super Administrador (Mesa Directiva)</option>
+                <option value="superadmin">Mesa Directiva (Superadmin)</option>
               </select>
             </div>
 
             <div>
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">Permisos de Visualización</label>
-              <div className="mt-1.5 space-y-1.5 rounded-xl border border-white/10 bg-black/50 p-2.5">
-                {listaPermisosOpciones.map((p) => (
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-2">
+                Permisos de Visualización
+              </label>
+              <div className="space-y-1.5 rounded-xl border border-white/5 bg-black/40 p-3">
+                {listaPermisosOpciones.map((opc) => (
                   <label
-                    key={p.key}
-                    className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer"
+                    key={opc.key}
+                    className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer hover:text-white"
                   >
                     <input
                       type="checkbox"
-                      checked={nuevosPermisos.includes(p.key)}
-                      onChange={() => handleTogglePermiso(p.key)}
-                      className="rounded border-white/10 bg-black text-amber-500 focus:ring-0 cursor-pointer"
+                      checked={nuevosPermisos.includes(opc.key)}
+                      onChange={() => handleTogglePermiso(opc.key)}
+                      className="rounded border-white/20 bg-slate-800 text-amber-500 focus:ring-amber-500"
                     />
-                    <span>{p.label}</span>
+                    <span className="font-medium text-[11px]">{opc.label}</span>
                   </label>
                 ))}
               </div>
@@ -194,7 +211,7 @@ export function AdminUsuariosView() {
             <button
               type="submit"
               disabled={guardando}
-              className="mt-2 w-full rounded-xl bg-amber-500 py-2.5 text-xs font-black uppercase tracking-wider text-slate-950 hover:bg-amber-400 transition cursor-pointer"
+              className="w-full rounded-xl bg-amber-500 py-2.5 text-xs font-black uppercase tracking-wider text-slate-950 transition hover:bg-amber-400 cursor-pointer shadow-lg shadow-amber-500/20"
             >
               {guardando ? "Creando..." : "Crear Usuario"}
             </button>
@@ -203,9 +220,14 @@ export function AdminUsuariosView() {
 
         {/* Lista de Usuarios */}
         <div className="samcro-panel col-span-1 rounded-2xl border border-white/10 p-5 shadow-xl lg:col-span-2">
-          <h3 className="text-sm font-black uppercase tracking-wider text-slate-100 mb-3">
-            Usuarios Registrados
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-black uppercase tracking-wider text-slate-100">
+              Usuarios Registrados
+            </h3>
+            <span className="text-[11px] text-slate-400 font-semibold">
+              {usuarios.length} cuentas activas
+            </span>
+          </div>
 
           {cargando ? (
             <div className="py-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
@@ -213,40 +235,83 @@ export function AdminUsuariosView() {
               <span>Cargando cuentas...</span>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {usuarios.map((u) => (
                 <div
                   key={u.username}
-                  className="flex flex-col gap-2 rounded-xl border border-white/10 bg-black/60 p-3 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-xl border border-white/10 bg-black/60 p-3 sm:flex-row sm:items-center sm:justify-between transition hover:border-white/20"
                 >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-slate-100">{u.username}</span>
-                      <span
-                        className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${
-                          u.rol === "superadmin"
-                            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                            : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                        }`}
+                  <div className="flex items-center gap-3">
+                    {/* Avatar con foto clickeable para ver en grande */}
+                    {u.avatar_url ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFotoAmpliada({
+                            url: u.avatar_url!,
+                            nombre: u.nombre || u.username,
+                          })
+                        }
+                        title="Clic para ver foto en tamaño completo"
+                        className="group relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-amber-500/40 bg-black cursor-pointer shadow-md transition-transform hover:scale-105 hover:border-amber-400"
                       >
-                        {u.rol}
-                      </span>
-                    </div>
+                        <img
+                          src={u.avatar_url}
+                          alt={u.username}
+                          className="h-full w-full object-cover transition duration-200 group-hover:brightness-110"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <FontAwesomeIcon icon={faEye} className="h-3.5 w-3.5 text-amber-300 drop-shadow" />
+                        </div>
+                      </button>
+                    ) : (
+                      <div
+                        className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-gradient-to-br from-amber-600/20 to-black text-amber-300 shadow-inner"
+                        title="Sin foto de perfil"
+                      >
+                        <span className="text-xs font-black uppercase">
+                          {(u.nombre || u.username).slice(0, 2)}
+                        </span>
+                      </div>
+                    )}
 
-                    <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-slate-400">
-                      <span>Permisos:</span>
-                      {u.permisos.length === 0 ? (
-                        <span className="text-slate-600">Ninguno</span>
-                      ) : (
-                        u.permisos.map((p) => (
-                          <span
-                            key={p}
-                            className="rounded bg-slate-800 px-1.5 py-0.2 text-slate-300"
-                          >
-                            {p}
+                    {/* Información del usuario */}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-sm text-slate-100">
+                          {u.nombre || u.username}
+                        </span>
+                        {u.nombre && (
+                          <span className="text-xs text-slate-400 font-semibold">
+                            @{u.username}
                           </span>
-                        ))
-                      )}
+                        )}
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${
+                            u.rol === "superadmin"
+                              ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                              : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                          }`}
+                        >
+                          {u.rol}
+                        </span>
+                      </div>
+
+                      <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-slate-400">
+                        <span>Permisos:</span>
+                        {u.permisos.length === 0 ? (
+                          <span className="text-slate-600">Ninguno</span>
+                        ) : (
+                          u.permisos.map((p) => (
+                            <span
+                              key={p}
+                              className="rounded bg-slate-800 px-1.5 py-0.2 text-slate-300"
+                            >
+                              {p}
+                            </span>
+                          ))
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -266,6 +331,42 @@ export function AdminUsuariosView() {
           )}
         </div>
       </div>
+
+      {/* Visor de Foto de Perfil Ampliada */}
+      {fotoAmpliada && (
+        <div
+          className="fixed inset-0 z-80 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md"
+          onClick={() => setFotoAmpliada(null)}
+        >
+          <div
+            className="samcro-panel relative max-h-[90vh] max-w-lg overflow-hidden rounded-3xl border border-amber-500/40 p-4 shadow-2xl flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex w-full items-center justify-between pb-3 border-b border-white/10 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-400">
+                  Foto de Perfil
+                </span>
+                <span className="text-xs text-slate-300 font-bold">&bull; {fotoAmpliada.nombre}</span>
+              </div>
+              <button
+                onClick={() => setFotoAmpliada(null)}
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              >
+                <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-black flex items-center justify-center p-2">
+              <img
+                src={fotoAmpliada.url}
+                alt={fotoAmpliada.nombre}
+                className="max-h-[70vh] w-auto max-w-full rounded-xl object-contain shadow-2xl"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
