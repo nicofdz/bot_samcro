@@ -7,7 +7,6 @@ import {
   faUsers,
   faUserPlus,
   faTrashCan,
-  faTriangleExclamation,
   faLock,
   faCircleNotch,
 } from "@fortawesome/free-solid-svg-icons";
@@ -31,10 +30,6 @@ export function AdminUsuariosView() {
   const [nuevoRol, setNuevoRol] = useState<"jefe" | "superadmin">("jefe");
   const [nuevosPermisos, setNuevosPermisos] = useState<string[]>(["mecanica"]);
   const [guardando, setGuardando] = useState(false);
-
-  // Modal confirmación limpieza
-  const [mostrarConfirmLimpieza, setMostrarConfirmLimpieza] = useState(false);
-  const [limpiando, setLimpiando] = useState(false);
 
   const cargarUsuarios = async () => {
     setCargando(true);
@@ -109,25 +104,6 @@ export function AdminUsuariosView() {
       }
     } catch (e) {
       console.error(e);
-    }
-  };
-
-  const handleLimpiarBdd = async () => {
-    setLimpiando(true);
-    try {
-      const res = await fetch("/api/admin/limpiar-bdd", { method: "POST" });
-      if (res.ok) {
-        alert("Base de datos de turnos y registros limpiada correctamente.");
-        setMostrarConfirmLimpieza(false);
-        window.location.reload();
-      } else {
-        const d = await res.json();
-        alert(d.error || "Error al limpiar la base de datos");
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLimpiando(false);
     }
   };
 
@@ -290,59 +266,6 @@ export function AdminUsuariosView() {
           )}
         </div>
       </div>
-
-      {/* Zona de Peligro */}
-      <div className="samcro-card rounded-2xl border border-red-500/30 bg-red-950/20 p-5">
-        <h3 className="text-sm font-black uppercase tracking-wider text-red-400 flex items-center gap-2">
-          <FontAwesomeIcon icon={faTriangleExclamation} className="h-4 w-4" />
-          Zona de Peligro del Sistema
-        </h3>
-        <p className="mt-1 text-xs text-slate-400 font-medium">
-          Reiniciar o vaciar datos históricos de turnos y servicios. Las cuentas de usuario no se
-          eliminarán.
-        </p>
-
-        <div className="mt-4">
-          <button
-            onClick={() => setMostrarConfirmLimpieza(true)}
-            className="rounded-xl border border-red-500/40 bg-red-600/20 px-3.5 py-2 text-xs font-black uppercase tracking-wider text-red-300 hover:bg-red-600/30 transition cursor-pointer"
-          >
-            Limpiar Todos los Registros de la BD
-          </button>
-        </div>
-      </div>
-
-      {/* Modal Confirmación Limpieza */}
-      {mostrarConfirmLimpieza && (
-        <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/85 p-4">
-          <div className="samcro-panel w-full max-w-md rounded-2xl border border-red-500/40 p-6 shadow-2xl">
-            <h3 className="text-sm font-black uppercase tracking-wider text-red-400 flex items-center gap-2">
-              <FontAwesomeIcon icon={faTriangleExclamation} className="h-4 w-4" />
-              ¿Confirmas el borrado de registros?
-            </h3>
-            <p className="mt-2 text-xs text-slate-300 font-medium leading-relaxed">
-              Esta acción borrará permanentemente todos los turnos, servicios registrados y listas de
-              pagos. Las contraseñas y cuentas seguirán intactas.
-            </p>
-
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                onClick={() => setMostrarConfirmLimpieza(false)}
-                className="rounded-xl border border-white/10 bg-slate-800 px-3.5 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-700 cursor-pointer"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleLimpiarBdd}
-                disabled={limpiando}
-                className="rounded-xl bg-red-600 px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-white hover:bg-red-500 transition cursor-pointer"
-              >
-                {limpiando ? "Borrando..." : "Sí, borrar registros"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
