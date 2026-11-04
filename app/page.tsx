@@ -279,12 +279,12 @@ export default function DashboardPage() {
         />
 
         {/* Tabs de Secciones estilo Rocker Patches con Font Awesome */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {tabsDisponibles.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setTabActiva(tab.key)}
-              className={`rocker-tab flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-black uppercase tracking-wider cursor-pointer ${
+              className={`rocker-tab flex items-center gap-2 whitespace-nowrap rounded-xl px-3 sm:px-3.5 py-2 sm:py-2.5 text-xs font-black uppercase tracking-wider cursor-pointer ${
                 tabActiva === tab.key ? "rocker-tab-active" : "text-slate-400"
               }`}
             >
