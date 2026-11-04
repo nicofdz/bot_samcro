@@ -73,3 +73,4 @@ export async function PUT(
     return NextResponse.json({ error: error.message || "Error al actualizar servicio" }, { status: 500 });
   }
 }
+

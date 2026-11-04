@@ -123,6 +123,19 @@ export function AdminUsuariosView() {
           .slice(0, 20);
         setNuevoUsername(userSlug);
       }
+    } else {
+      setNuevoDiscordId(val);
+    }
+  };
+
+  const handleInputDiscordIdNuevo = (val: string) => {
+    setNuevoDiscordId(val);
+    const c = canales.find((item) => item.discord_id === val);
+    if (c) {
+      setCanalSeleccionado(c.discord_id);
+      if (!nuevoNombre.trim()) setNuevoNombre(c.nombre);
+    } else {
+      setCanalSeleccionado(val);
     }
   };
 
@@ -195,6 +208,19 @@ export function AdminUsuariosView() {
     if (c) {
       setEditNombre(c.nombre);
       setEditDiscordId(c.discord_id);
+    } else {
+      setEditDiscordId(val);
+    }
+  };
+
+  const handleInputDiscordIdEdicion = (val: string) => {
+    setEditDiscordId(val);
+    const c = canales.find((item) => item.discord_id === val);
+    if (c) {
+      setEditCanalSeleccionado(c.discord_id);
+      if (!editNombre.trim()) setEditNombre(c.nombre);
+    } else {
+      setEditCanalSeleccionado(val);
     }
   };
 
@@ -318,14 +344,33 @@ export function AdminUsuariosView() {
                 className="w-full rounded-xl border border-amber-500/30 bg-black/70 px-3 py-2 text-xs font-semibold text-amber-300 outline-none transition focus:border-amber-500"
               >
                 <option value="">— Seleccionar miembro de la lista ({canales.length} registrados) —</option>
+                {!canales.some((c) => c.discord_id === canalSeleccionado) && canalSeleccionado && (
+                  <option value={canalSeleccionado}>
+                    {nuevoNombre || "Canal personalizado"} (Discord ID: {canalSeleccionado})
+                  </option>
+                )}
                 {canales.map((c) => (
                   <option key={c.discord_id} value={c.discord_id}>
-                    {c.nombre}
+                    {c.nombre} (Discord ID: {c.discord_id})
                   </option>
                 ))}
               </select>
+
+              <div className="mt-2">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Discord ID del Trabajador (Auto o Manual)
+                </label>
+                <input
+                  type="text"
+                  value={nuevoDiscordId}
+                  onChange={(e) => handleInputDiscordIdNuevo(e.target.value.trim())}
+                  placeholder="Ej. 1567337545996435537"
+                  className="mt-1 w-full rounded-xl border border-white/10 bg-black/60 px-3 py-1.5 text-xs font-mono font-semibold text-amber-300 outline-none transition focus:border-amber-500"
+                />
+              </div>
+
               <p className="text-[10px] text-slate-400 mt-1">
-                Al seleccionar un miembro, sus turnos y ventas web quedarán en su misma bitácora de Discord.
+                Al seleccionar un miembro o pegar su Discord ID, sus turnos y ventas web quedarán en su misma bitácora de Discord.
               </p>
             </div>
 
@@ -614,14 +659,33 @@ export function AdminUsuariosView() {
                   className="w-full rounded-xl border border-amber-500/30 bg-black/80 px-3 py-2 text-xs font-semibold text-amber-300 outline-none transition focus:border-amber-500"
                 >
                   <option value="">— Sin vinculación / Ingreso manual —</option>
+                  {!canales.some((c) => c.discord_id === editCanalSeleccionado) && editCanalSeleccionado && (
+                    <option value={editCanalSeleccionado}>
+                      {editNombre || "Canal actual"} (Discord ID: {editCanalSeleccionado})
+                    </option>
+                  )}
                   {canales.map((c) => (
                     <option key={c.discord_id} value={c.discord_id}>
                       {c.nombre} (Discord ID: {c.discord_id})
                     </option>
                   ))}
                 </select>
+
+                <div className="mt-2">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Discord ID del Trabajador (Auto o Manual)
+                  </label>
+                  <input
+                    type="text"
+                    value={editDiscordId}
+                    onChange={(e) => handleInputDiscordIdEdicion(e.target.value.trim())}
+                    placeholder="Ej. 1567337545996435537"
+                    className="mt-1 w-full rounded-xl border border-white/10 bg-black/60 px-3.5 py-1.5 text-xs font-mono font-semibold text-amber-300 outline-none transition focus:border-amber-500"
+                  />
+                </div>
+
                 <p className="text-[10px] text-slate-400 mt-1">
-                  Al vincular un miembro, sus turnos y ventas web se sincronizarán directamente con ese canal de Discord.
+                  Al vincular un miembro o ingresar su Discord ID, sus turnos y ventas web se sincronizarán directamente con ese canal de Discord.
                 </p>
               </div>
 

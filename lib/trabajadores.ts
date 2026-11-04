@@ -14,14 +14,61 @@ export interface IdentidadTrabajador {
 }
 
 /**
- * Obtiene la lista completa de canales de trabajadores registrados (para dropdowns de asignación)
+ * Obtiene la lista completa de canales de trabajadores registrados (para dropdowns de asignación).
+ * Sincroniza e incluye automáticamente a cualquier trabajador que tenga registros en la base de datos
+ * pero que no estuviera previamente en la tabla canales_trabajador (como Kimbo DaCosta).
  */
 export async function obtenerCanalesTrabajadores(): Promise<CanalTrabajador[]> {
   try {
+    // 1. Auto-sincronizar trabajadores que existen en 'registros' pero faltan en 'canales_trabajador'
+    try {
+      await query(`
+        INSERT INTO canales_trabajador (discord_id, nombre, canal_id)
+        SELECT DISTINCT r.discord_id, r.nombre, 'discord'
+        FROM registros r
+        WHERE r.discord_id IS NOT NULL 
+          AND r.discord_id != '' 
+          AND r.nombre IS NOT NULL 
+          AND r.nombre != ''
+          AND NOT EXISTS (
+            SELECT 1 FROM canales_trabajador c WHERE c.discord_id = r.discord_id
+          )
+      `);
+    } catch (syncErr) {
+      console.warn("Aviso al auto-sincronizar canales desde registros:", syncErr);
+    }
+
+    // 2. Obtener lista desde canales_trabajador
     const rows = await query<CanalTrabajador>(
       "SELECT discord_id, nombre, canal_id FROM canales_trabajador ORDER BY nombre ASC"
     );
-    return rows;
+
+    // 3. Fallback adicional en caso de que la inserción no haya completado
+    const mapa = new Map<string, CanalTrabajador>();
+    for (const r of rows) {
+      mapa.set(r.discord_id, r);
+    }
+
+    try {
+      const desdeRegistros = await query<{ discord_id: string; nombre: string }>(
+        `SELECT DISTINCT discord_id, nombre 
+         FROM registros 
+         WHERE discord_id IS NOT NULL AND discord_id != '' AND nombre IS NOT NULL AND nombre != ''`
+      );
+      for (const dr of desdeRegistros) {
+        if (!mapa.has(dr.discord_id)) {
+          mapa.set(dr.discord_id, {
+            discord_id: dr.discord_id,
+            nombre: dr.nombre,
+            canal_id: "discord",
+          });
+        }
+      }
+    } catch {}
+
+    const resultadoFinal = Array.from(mapa.values());
+    resultadoFinal.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    return resultadoFinal;
   } catch (error) {
     console.error("Error al obtener canales de trabajadores:", error);
     return [];
@@ -49,6 +96,21 @@ export async function resolverIdentidadTrabajador(user: {
         discord_id: c.discord_id,
         nombre: c.nombre,
         canal_id: c.canal_id || "web",
+        esDiscordOriginal: true,
+      };
+    } else {
+      // Si tiene discord_id pero no estaba en canales_trabajador, registrarlo de inmediato
+      const nombreFinal = (user.nombre && user.nombre.trim()) || user.username;
+      try {
+        await query(
+          "INSERT INTO canales_trabajador (discord_id, nombre, canal_id) VALUES ($1, $2, 'web')",
+          [user.discord_id, nombreFinal]
+        );
+      } catch {}
+      return {
+        discord_id: user.discord_id,
+        nombre: nombreFinal,
+        canal_id: "web",
         esDiscordOriginal: true,
       };
     }
