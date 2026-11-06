@@ -82,12 +82,18 @@ export async function PUT(
     // Si tiene nombre y discord_id asignados, sincronizar en canales_trabajador (sin depender de ON CONFLICT)
     if (nombre && discord_id) {
       try {
-        const existeCanal = await queryOne(
-          "SELECT discord_id FROM canales_trabajador WHERE discord_id = $1",
+        const existeCanal = await queryOne<{ discord_id: string; avatar_url: string | null }>(
+          "SELECT discord_id, avatar_url FROM canales_trabajador WHERE discord_id = $1",
           [discord_id]
         );
         if (existeCanal) {
           await query("UPDATE canales_trabajador SET nombre = $1 WHERE discord_id = $2", [nombre, discord_id]);
+          if (existeCanal.avatar_url) {
+            await query(
+              "UPDATE usuarios SET avatar_url = $1 WHERE username = $2 AND (avatar_url IS NULL OR avatar_url LIKE '%discord%')",
+              [existeCanal.avatar_url, usernameFinal]
+            );
+          }
         } else {
           await query(
             "INSERT INTO canales_trabajador (discord_id, nombre, canal_id) VALUES ($1, $2, 'web')",

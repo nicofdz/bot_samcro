@@ -70,24 +70,37 @@ export async function POST(request: Request) {
     const passwordHash = hashPassword(password);
     const nowIso = new Date().toISOString();
 
+    // Si tiene discord_id, buscar si ya tiene avatar_url en canales_trabajador
+    let avatarUrlAuto: string | null = null;
+    if (discord_id) {
+      const c = await queryOne<{ avatar_url: string | null }>(
+        "SELECT avatar_url FROM canales_trabajador WHERE discord_id = $1",
+        [discord_id]
+      );
+      if (c?.avatar_url) {
+        avatarUrlAuto = c.avatar_url;
+      }
+    }
+
     if (isPostgres()) {
       await query(
-        `INSERT INTO usuarios (username, password_hash, rol, permisos, debe_cambiar_password, creado_en, nombre, discord_id)
-         VALUES ($1, $2, $3, $4, 1, $5, $6, $7)
+        `INSERT INTO usuarios (username, password_hash, rol, permisos, debe_cambiar_password, creado_en, nombre, discord_id, avatar_url)
+         VALUES ($1, $2, $3, $4, 1, $5, $6, $7, $8)
          ON CONFLICT (username) DO UPDATE SET
          password_hash = EXCLUDED.password_hash,
          rol = EXCLUDED.rol,
          permisos = EXCLUDED.permisos,
          debe_cambiar_password = EXCLUDED.debe_cambiar_password,
          nombre = COALESCE(EXCLUDED.nombre, usuarios.nombre),
-         discord_id = COALESCE(EXCLUDED.discord_id, usuarios.discord_id)`,
-        [username, passwordHash, rol, JSON.stringify(permisos), nowIso, nombre, discord_id]
+         discord_id = COALESCE(EXCLUDED.discord_id, usuarios.discord_id),
+         avatar_url = COALESCE(usuarios.avatar_url, EXCLUDED.avatar_url)`,
+        [username, passwordHash, rol, JSON.stringify(permisos), nowIso, nombre, discord_id, avatarUrlAuto]
       );
     } else {
       await query(
-        `INSERT OR REPLACE INTO usuarios (username, password_hash, rol, permisos, debe_cambiar_password, creado_en, nombre, discord_id)
-         VALUES ($1, $2, $3, $4, 1, $5, $6, $7)`,
-        [username, passwordHash, rol, JSON.stringify(permisos), nowIso, nombre, discord_id]
+        `INSERT OR REPLACE INTO usuarios (username, password_hash, rol, permisos, debe_cambiar_password, creado_en, nombre, discord_id, avatar_url)
+         VALUES ($1, $2, $3, $4, 1, $5, $6, $7, $8)`,
+        [username, passwordHash, rol, JSON.stringify(permisos), nowIso, nombre, discord_id, avatarUrlAuto]
       );
     }
 

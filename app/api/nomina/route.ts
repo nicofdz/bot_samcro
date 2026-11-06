@@ -42,37 +42,44 @@ export async function GET(request: Request) {
       };
     }
 
-    // 2. Canales de trabajadores registrados
-    const canales = await query<{ discord_id: string; nombre: string }>(
-      "SELECT discord_id, nombre FROM canales_trabajador"
+    // 2. Canales de trabajadores registrados (con foto de perfil de Discord)
+    const canales = await query<{ discord_id: string; nombre: string; avatar_url: string | null }>(
+      "SELECT discord_id, nombre, avatar_url FROM canales_trabajador"
     );
-    const trabajadoresActivos: Record<string, { nombre: string }> = {};
+    const trabajadoresActivos: Record<string, { nombre: string; avatar_url?: string | null }> = {};
     for (const c of canales) {
-      trabajadoresActivos[c.discord_id] = { nombre: c.nombre };
+      trabajadoresActivos[c.discord_id] = { nombre: c.nombre, avatar_url: c.avatar_url || null };
     }
 
-    // 3. Usuarios registrados para detectar jefes
+    // 3. Usuarios registrados para detectar jefes y fotos de perfil
     const usuarios = await query<{
       username: string;
       nombre: string | null;
       discord_id: string | null;
       rol: string;
-    }>("SELECT username, nombre, discord_id, rol FROM usuarios");
-    const usuariosDb: Record<string, { rol: string }> = {};
+      avatar_url: string | null;
+    }>("SELECT username, nombre, discord_id, rol, avatar_url FROM usuarios");
+    const usuariosDb: Record<string, { rol: string; avatar_url?: string | null }> = {};
     for (const u of usuarios) {
       const rol = u.rol;
-      const asignarRol = (clave: string) => {
-        const actual = usuariosDb[clave]?.rol;
-        if (!actual || actual === "trabajador") {
-          usuariosDb[clave] = { rol };
-        } else if (actual === "jefe" && rol === "superadmin") {
-          usuariosDb[clave] = { rol };
+      const avatar_url = u.avatar_url || null;
+      const asignar = (clave: string) => {
+        const actual = usuariosDb[clave];
+        if (!actual) {
+          usuariosDb[clave] = { rol, avatar_url };
+        } else {
+          if (actual.rol === "trabajador" || (actual.rol === "jefe" && rol === "superadmin")) {
+            actual.rol = rol;
+          }
+          if (!actual.avatar_url && avatar_url) {
+            actual.avatar_url = avatar_url;
+          }
         }
       };
 
-      if (u.username) asignarRol(u.username.toLowerCase().trim());
-      if (u.nombre) asignarRol(u.nombre.toLowerCase().trim());
-      if (u.discord_id) asignarRol(u.discord_id.trim());
+      if (u.username) asignar(u.username.toLowerCase().trim());
+      if (u.nombre) asignar(u.nombre.toLowerCase().trim());
+      if (u.discord_id) asignar(u.discord_id.trim());
     }
 
     // 4. Calcular ranking y Trabajador de la Semana para este periodo

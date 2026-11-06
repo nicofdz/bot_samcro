@@ -4,6 +4,7 @@ export interface CanalTrabajador {
   discord_id: string;
   nombre: string;
   canal_id?: string | null;
+  avatar_url?: string | null;
 }
 
 export interface IdentidadTrabajador {
@@ -11,6 +12,7 @@ export interface IdentidadTrabajador {
   nombre: string;
   canal_id: string;
   esDiscordOriginal: boolean;
+  avatar_url?: string | null;
 }
 
 /**
@@ -40,7 +42,7 @@ export async function obtenerCanalesTrabajadores(): Promise<CanalTrabajador[]> {
 
     // 2. Obtener lista desde canales_trabajador
     const rows = await query<CanalTrabajador>(
-      "SELECT discord_id, nombre, canal_id FROM canales_trabajador ORDER BY nombre ASC"
+      "SELECT discord_id, nombre, canal_id, avatar_url FROM canales_trabajador ORDER BY nombre ASC"
     );
 
     // 3. Fallback adicional en caso de que la inserción no haya completado

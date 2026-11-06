@@ -89,6 +89,7 @@ export interface TrabajadorNomina {
   pagado_por?: string | null;
   discord_id?: string;
   esTrabajadorSemana?: boolean;
+  avatar_url?: string | null;
 }
 
 export async function calcularNominaParaSeccion(
@@ -96,8 +97,8 @@ export async function calcularNominaParaSeccion(
   inicioUtcIso: string,
   finUtcIso: string,
   checklist: Record<string, { pagado_por?: string }>,
-  trabajadoresActivos: Record<string, { nombre: string }>,
-  usuariosDb: Record<string, { rol: string }>,
+  trabajadoresActivos: Record<string, { nombre: string; avatar_url?: string | null }>,
+  usuariosDb: Record<string, { rol: string; avatar_url?: string | null }>,
   campeonSemanaNombre?: string | null
 ): Promise<TrabajadorNomina[]> {
   const seccionCfg = SECCIONES[seccionKey];
@@ -171,8 +172,9 @@ export async function calcularNominaParaSeccion(
   const resultado: TrabajadorNomina[] = [];
 
   for (const [did, datos] of Object.entries(mapa)) {
-    const userDb = usuariosDb[datos.nombre.toLowerCase()] || usuariosDb[did];
+    const userDb = usuariosDb[datos.nombre.toLowerCase().trim()] || usuariosDb[did];
     const esJefe = userDb?.rol === "superadmin" || userDb?.rol === "jefe";
+    const avatarUrl = userDb?.avatar_url || trabajadoresActivos[did]?.avatar_url || null;
 
     let pagoHoras = 0;
     if (esJefe) {
@@ -206,6 +208,7 @@ export async function calcularNominaParaSeccion(
       pagado_por: pagoInfo?.pagado_por || null,
       discord_id: did,
       esTrabajadorSemana: esCampeon,
+      avatar_url: avatarUrl,
     });
   }
 

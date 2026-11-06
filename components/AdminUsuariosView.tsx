@@ -32,6 +32,7 @@ interface CanalTrabajador {
   discord_id: string;
   nombre: string;
   canal_id?: string | null;
+  avatar_url?: string | null;
 }
 
 export function AdminUsuariosView() {
@@ -487,6 +488,7 @@ export function AdminUsuariosView() {
             <div className="space-y-2.5">
               {usuarios.map((u) => {
                 const canalMatch = u.discord_id ? canales.find((c) => c.discord_id === u.discord_id) : null;
+                const fotoSrc = u.avatar_url || canalMatch?.avatar_url || null;
 
                 return (
                   <div
@@ -495,12 +497,12 @@ export function AdminUsuariosView() {
                   >
                     <div className="flex items-center gap-3">
                       {/* Avatar con foto clickeable para ver en grande */}
-                      {u.avatar_url ? (
+                      {fotoSrc ? (
                         <button
                           type="button"
                           onClick={() =>
                             setFotoAmpliada({
-                              url: u.avatar_url!,
+                              url: fotoSrc,
                               nombre: u.nombre || u.username,
                             })
                           }
@@ -508,7 +510,7 @@ export function AdminUsuariosView() {
                           className="group relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-amber-500/40 bg-black cursor-pointer shadow-md transition-transform hover:scale-105 hover:border-amber-400"
                         >
                           <img
-                            src={u.avatar_url}
+                            src={fotoSrc}
                             alt={u.username}
                             className="h-full w-full object-cover transition duration-200 group-hover:brightness-110"
                           />

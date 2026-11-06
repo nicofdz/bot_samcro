@@ -122,15 +122,36 @@ export function NominaTable({
                     {/* Miembro & rol */}
                     <td className="px-5 py-3.5 font-bold text-slate-100">
                       <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-black shadow-inner ${
-                            t.esJefe
-                              ? "border border-amber-500/40 bg-gradient-to-br from-amber-500/20 to-black text-amber-300"
-                              : "border border-white/10 bg-gradient-to-br from-slate-800 to-black text-slate-300"
-                          }`}
-                        >
-                          {t.nombre.charAt(0).toUpperCase()}
-                        </div>
+                        {/* Avatar con foto de Discord / Perfil o Inicial */}
+                        {t.avatar_url ? (
+                          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-amber-500/40 bg-black shadow-inner">
+                            <img
+                              src={t.avatar_url}
+                              alt={t.nombre}
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = "none";
+                                const parent = (e.target as HTMLElement).parentElement;
+                                if (parent && !parent.querySelector("span")) {
+                                  const span = document.createElement("span");
+                                  span.className = "text-xs font-black text-amber-300";
+                                  span.innerText = t.nombre.charAt(0).toUpperCase();
+                                  parent.appendChild(span);
+                                }
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-black shadow-inner ${
+                              t.esJefe
+                                ? "border border-amber-500/40 bg-gradient-to-br from-amber-500/20 to-black text-amber-300"
+                                : "border border-white/10 bg-gradient-to-br from-slate-800 to-black text-slate-300"
+                            }`}
+                          >
+                            {t.nombre.charAt(0).toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-slate-100 font-bold">{t.nombre}</span>

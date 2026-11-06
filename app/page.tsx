@@ -197,7 +197,16 @@ export default function DashboardPage() {
             esJefe: t.esJefe,
             pagado: true,
             discord_id: t.discord_id,
+            avatar_url: t.avatar_url || null,
+            esTrabajadorSemana: t.esTrabajadorSemana || false,
           };
+        } else {
+          if (!mapa[t.nombre].avatar_url && t.avatar_url) {
+            mapa[t.nombre].avatar_url = t.avatar_url;
+          }
+          if (t.esTrabajadorSemana) {
+            mapa[t.nombre].esTrabajadorSemana = true;
+          }
         }
 
         mapa[t.nombre].horas += t.horas;
