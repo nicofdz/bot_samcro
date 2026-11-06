@@ -10,6 +10,7 @@ import {
   faShieldHalved,
   faUser,
   faCrown,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface NavbarProps {
@@ -20,6 +21,7 @@ interface NavbarProps {
   onLogout: () => void;
   onOpenPasswordModal: () => void;
   onOpenPerfilModal: () => void;
+  onOpenSubirBitacora?: () => void;
 }
 
 export function Navbar({
@@ -30,6 +32,7 @@ export function Navbar({
   onLogout,
   onOpenPasswordModal,
   onOpenPerfilModal,
+  onOpenSubirBitacora,
 }: NavbarProps) {
   return (
     <header className="samcro-panel sticky top-0 z-40 border-b border-white/10 px-4 py-3 md:px-8">
@@ -103,8 +106,8 @@ export function Navbar({
                 </span>
               )}
               {user.es_trabajador_semana && (
-                <div className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-400 text-slate-950 text-[7px] font-black shadow">
-                  👑
+                <div className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-400 text-slate-950 shadow">
+                  <FontAwesomeIcon icon={faCrown} className="h-2 w-2 text-slate-950" />
                 </div>
               )}
             </div>
@@ -136,6 +139,18 @@ export function Navbar({
               </div>
             </div>
           </button>
+
+          {/* Botón Destacado: Subir Bitácora */}
+          {onOpenSubirBitacora && (
+            <button
+              onClick={onOpenSubirBitacora}
+              title="Registrar Turno o Subir Trabajo a Mi Bitácora"
+              className="flex h-8 items-center gap-1.5 rounded-lg border border-amber-500/50 bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-transparent px-2.5 sm:px-3 text-xs font-black uppercase tracking-wider text-amber-300 transition hover:bg-amber-500/30 hover:border-amber-400 hover:text-amber-200 cursor-pointer shadow-sm"
+            >
+              <FontAwesomeIcon icon={faPlus} className="h-3 w-3 text-amber-400" />
+              <span className="hidden sm:inline">Subir Bitácora</span>
+            </button>
+          )}
 
           {/* Botón cambiar password */}
           <button

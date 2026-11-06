@@ -10,6 +10,7 @@ import {
   faCheck,
   faHourglassHalf,
   faEye,
+  faCrown,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface NominaTableProps {
@@ -138,7 +139,8 @@ export function NominaTable({
                                 className="rounded-md bg-gradient-to-r from-amber-400 to-yellow-500 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-slate-950 shadow-sm flex items-center gap-1"
                                 title="Trabajador de la Semana de SAMCRO"
                               >
-                                👑 TOP SEMANA
+                                <FontAwesomeIcon icon={faCrown} className="h-2.5 w-2.5 text-slate-950" />
+                                <span>TOP SEMANA</span>
                               </span>
                             )}
                             {t.esJefe && (

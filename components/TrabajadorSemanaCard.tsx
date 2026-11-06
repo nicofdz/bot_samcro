@@ -361,8 +361,9 @@ export function TrabajadorSemanaCard({ offset, onVerDetalles }: TrabajadorSemana
               className="h-auto max-h-[80vh] w-auto object-contain"
             />
             <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black via-black/80 to-transparent p-4 text-center">
-              <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-300 border border-amber-500/40">
-                👑 TRABAJADOR DE LA SEMANA: {fotoModal.nombre}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-300 border border-amber-500/40">
+                <FontAwesomeIcon icon={faCrown} className="h-3 w-3 text-amber-400" />
+                <span>TRABAJADOR DE LA SEMANA: {fotoModal.nombre}</span>
               </span>
             </div>
             <button

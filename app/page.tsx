@@ -28,6 +28,7 @@ import {
   faCircleNotch,
   faGem,
   faClipboardList,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Mapeo de iconos Font Awesome por sección
@@ -120,6 +121,62 @@ export default function DashboardPage() {
 
   // Turnos activos
   const turnosActivos = datosNomina["_turnos_activos"] || [];
+
+  // Verificar si el usuario tiene permisos de directiva o visualización de áreas de nómina
+  const tienePermisosAreas = Boolean(
+    user && (
+      user.rol === "superadmin" ||
+      user.rol === "jefe" ||
+      user.permisos.includes("consolidado") ||
+      Object.keys(SECCIONES).some((s) => user.permisos.includes(s))
+    )
+  );
+
+  // Lista de tabs permitidas para este usuario (con iconos Font Awesome)
+  const tabsDisponibles = useMemo(() => {
+    if (!user) return [];
+    return [
+      ...(user.rol === "trabajador"
+        ? [{ key: "bitacora", label: "Mi Bitácora", icon: ICONOS_SECCION.bitacora }]
+        : []),
+      ...(user.rol === "superadmin" || user.permisos.includes("consolidado")
+        ? [{ key: "consolidado", label: "Consolidado", icon: ICONOS_SECCION.consolidado }]
+        : []),
+      ...Object.entries(SECCIONES)
+        .filter(([k]) => user.rol === "superadmin" || user.permisos.includes("consolidado") || user.permisos.includes(k))
+        .map(([k, v]) => ({ key: k, label: v.nombre_visible, icon: ICONOS_SECCION[k] || faWrench })),
+      ...(user.rol !== "trabajador"
+        ? [{ key: "bitacora", label: "Mi Bitácora", icon: ICONOS_SECCION.bitacora }]
+        : []),
+      ...(tienePermisosAreas
+        ? [{
+            key: "turnos",
+            label: `Turnos en Vivo (${turnosActivos.length})`,
+            icon: ICONOS_SECCION.turnos,
+            badge: turnosActivos.length > 0,
+          }]
+        : []),
+      ...(user.rol === "superadmin" ? [{ key: "admin", label: "Administración", icon: ICONOS_SECCION.admin }] : []),
+    ];
+  }, [user, tienePermisosAreas, turnosActivos.length]);
+
+  // Guardián de seguridad de pestañas según rol y permisos
+  useEffect(() => {
+    if (!user) return;
+    if (user.rol === "trabajador") {
+      if (tabActiva !== "bitacora") {
+        setTabActiva("bitacora");
+      }
+      return;
+    }
+    if (tabActiva === "admin" && user.rol !== "superadmin") {
+      setTabActiva("consolidado");
+      return;
+    }
+    if (tabsDisponibles.length > 0 && !tabsDisponibles.some((t) => t.key === tabActiva)) {
+      setTabActiva(tabsDisponibles[0]?.key || "bitacora");
+    }
+  }, [user, tabActiva, tabsDisponibles]);
 
   // Trabajadores consolidados (todas las secciones combinadas)
   const trabajadoresConsolidados = useMemo<TrabajadorNomina[]>(() => {
@@ -231,10 +288,24 @@ export default function DashboardPage() {
     }
   };
 
-  // Manejador de logout
+  // Manejador de login exitoso con direccionamiento estricto
+  const handleLoginSuccess = (u: UserSession) => {
+    setUser(u);
+    if (u.rol === "trabajador") {
+      setTabActiva("bitacora");
+    } else if (u.rol === "superadmin" || u.permisos.includes("consolidado")) {
+      setTabActiva("consolidado");
+    } else {
+      const primerPermiso = Object.keys(SECCIONES).find((s) => u.permisos.includes(s));
+      setTabActiva(primerPermiso || "bitacora");
+    }
+  };
+
+  // Manejador de logout con reseteo de pestaña por seguridad
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     setUser(null);
+    setTabActiva("consolidado");
   };
 
   // 1. Estado de carga inicial de auth
@@ -253,43 +324,8 @@ export default function DashboardPage() {
 
   // 2. Si no hay usuario logueado, mostrar LoginModal
   if (!user) {
-    return <LoginModal onLoginSuccess={(u) => setUser(u)} />;
+    return <LoginModal onLoginSuccess={handleLoginSuccess} />;
   }
-
-  // Verificar si el usuario tiene permisos de directiva o visualización de áreas de nómina
-  const tienePermisosAreas = Boolean(
-    user && (
-      user.rol === "superadmin" ||
-      user.rol === "jefe" ||
-      user.permisos.includes("consolidado") ||
-      Object.keys(SECCIONES).some((s) => user.permisos.includes(s))
-    )
-  );
-
-  // Lista de tabs permitidas para este usuario (con iconos Font Awesome)
-  const tabsDisponibles = [
-    ...(user.rol === "trabajador"
-      ? [{ key: "bitacora", label: "Mi Bitácora", icon: ICONOS_SECCION.bitacora }]
-      : []),
-    ...(user.rol === "superadmin" || user.permisos.includes("consolidado")
-      ? [{ key: "consolidado", label: "Consolidado", icon: ICONOS_SECCION.consolidado }]
-      : []),
-    ...Object.entries(SECCIONES)
-      .filter(([k]) => user.rol === "superadmin" || user.permisos.includes("consolidado") || user.permisos.includes(k))
-      .map(([k, v]) => ({ key: k, label: v.nombre_visible, icon: ICONOS_SECCION[k] || faWrench })),
-    ...(user.rol !== "trabajador"
-      ? [{ key: "bitacora", label: "Mi Bitácora", icon: ICONOS_SECCION.bitacora }]
-      : []),
-    ...(tienePermisosAreas
-      ? [{
-          key: "turnos",
-          label: `Turnos en Vivo (${turnosActivos.length})`,
-          icon: ICONOS_SECCION.turnos,
-          badge: turnosActivos.length > 0,
-        }]
-      : []),
-    ...(user.rol === "superadmin" ? [{ key: "admin", label: "Administración", icon: ICONOS_SECCION.admin }] : []),
-  ];
 
   return (
     <div className="min-h-screen bg-[#07080b] text-slate-100 flex flex-col">
@@ -302,6 +338,13 @@ export default function DashboardPage() {
         onLogout={handleLogout}
         onOpenPasswordModal={() => setMostrarPasswordModal(true)}
         onOpenPerfilModal={() => setMostrarPerfilModal(true)}
+        onOpenSubirBitacora={() => {
+          setTabActiva("bitacora");
+          setTimeout(() => {
+            const el = document.getElementById("formulario-registro-bitacora");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }, 50);
+        }}
       />
 
       {/* Contenedor Principal */}
@@ -329,9 +372,26 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-black/60 px-3.5 py-2 border border-white/5 text-xs text-slate-400 text-left sm:text-right">
-            <span>Corte semanal automático: </span>
-            <span className="font-black text-amber-400 block sm:inline">Domingos a las 16:00 hrs</span>
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            {/* Botón destacado Subir Bitácora */}
+            <button
+              onClick={() => {
+                setTabActiva("bitacora");
+                setTimeout(() => {
+                  const el = document.getElementById("formulario-registro-bitacora");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }, 50);
+              }}
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 px-4 py-2 text-xs font-black uppercase tracking-wider text-slate-950 shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-yellow-400 transition cursor-pointer"
+            >
+              <FontAwesomeIcon icon={faPlus} className="h-3.5 w-3.5" />
+              <span>Subir Mi Bitácora</span>
+            </button>
+
+            <div className="rounded-xl bg-black/60 px-3.5 py-2 border border-white/5 text-xs text-slate-400 text-left sm:text-right">
+              <span>Corte semanal automático: </span>
+              <span className="font-black text-amber-400 block sm:inline">Domingos a las 16:00 hrs</span>
+            </div>
           </div>
         </div>
 
@@ -356,8 +416,8 @@ export default function DashboardPage() {
           />
         )}
 
-        {/* Tabs de Secciones estilo Rocker Patches con Font Awesome (solo si hay más de 1 tab disponible) */}
-        {tabsDisponibles.length > 1 && (
+        {/* Tabs de Secciones estilo Rocker Patches con Font Awesome */}
+        {tabsDisponibles.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {tabsDisponibles.map((tab) => (
               <button
@@ -389,13 +449,19 @@ export default function DashboardPage() {
             offset={offset}
             onActualizacion={() => cargarNomina()}
           />
-        ) : tabActiva === "turnos" ? (
+        ) : tabActiva === "turnos" && tienePermisosAreas ? (
           <TurnosActivosView
             turnos={turnosActivos}
             onTurnoFinalizado={() => cargarNomina()}
           />
-        ) : tabActiva === "admin" ? (
+        ) : tabActiva === "admin" && user.rol === "superadmin" ? (
           <AdminUsuariosView />
+        ) : user.rol === "trabajador" ? (
+          <BitacoraTrabajadorView
+            user={user}
+            offset={offset}
+            onActualizacion={() => cargarNomina()}
+          />
         ) : (
           <div>
             {cargandoNomina ? (

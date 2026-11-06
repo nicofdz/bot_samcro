@@ -24,6 +24,7 @@ import {
   faCalendarCheck,
   faUserCheck,
   faPaste,
+  faLightbulb,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface TurnoActivo {
@@ -666,14 +667,15 @@ export function BitacoraTrabajadorView({ user, offset, onActualizacion }: Bitaco
         </div>
 
         {/* MÓDULO 2: SUBIR SERVICIO / VENTA CON CAPTURA CTRL + V */}
-        <div className="samcro-card lg:col-span-8 rounded-2xl border border-white/10 p-5 shadow-xl">
+        <div id="formulario-registro-bitacora" className="samcro-card lg:col-span-8 rounded-2xl border border-white/10 p-5 shadow-xl scroll-mt-24">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
               <FontAwesomeIcon icon={faCamera} className="h-3.5 w-3.5 text-amber-500" />
               Subir Trabajo / Venta a Bitácora
             </h2>
-            <span className="rounded-lg bg-white/5 px-2.5 py-1 text-[10px] font-bold text-slate-300 border border-white/10">
-              📸 Pega con <kbd className="text-amber-400 font-mono">Ctrl + V</kbd>
+            <span className="rounded-lg bg-white/5 px-2.5 py-1 text-[10px] font-bold text-slate-300 border border-white/10 flex items-center gap-1.5">
+              <FontAwesomeIcon icon={faCamera} className="h-3 w-3 text-amber-400" />
+              <span>Pega con <kbd className="text-amber-400 font-mono">Ctrl + V</kbd></span>
             </span>
           </div>
           <p className="mt-1 text-[11px] text-slate-400">
@@ -892,7 +894,8 @@ export function BitacoraTrabajadorView({ user, offset, onActualizacion }: Bitaco
                     o haz clic para seleccionar una imagen desde tu dispositivo (JPG, PNG, WebP)
                   </p>
                   <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-white/5 px-2.5 py-1 text-[10px] text-slate-400 border border-white/5">
-                    <span>💡 Tip: Saca captura con <strong>Win + Shift + S</strong> y dale Ctrl+V de inmediato</span>
+                    <FontAwesomeIcon icon={faLightbulb} className="h-3 w-3 text-amber-400" />
+                    <span>Tip: Saca captura con <strong>Win + Shift + S</strong> y dale Ctrl+V de inmediato</span>
                   </div>
                 </div>
               )}

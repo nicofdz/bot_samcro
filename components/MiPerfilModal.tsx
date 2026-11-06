@@ -16,6 +16,8 @@ import {
   faAt,
   faIdCard,
   faEye,
+  faCrown,
+  faStar,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface MiPerfilModalProps {
@@ -323,7 +325,7 @@ export function MiPerfilModal({
             <div className="rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-500/20 via-yellow-500/10 to-transparent p-4 shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black text-lg shadow-md">
-                  👑
+                  <FontAwesomeIcon icon={faCrown} className="h-5 w-5 text-slate-950" />
                 </div>
                 <div>
                   <span className="text-[11px] font-black uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
@@ -355,8 +357,9 @@ export function MiPerfilModal({
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {user.rol === "superadmin" || user.permisos.includes("consolidado") ? (
-                  <span className="rounded bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-500/30">
-                    ★ Acceso Total (Consolidado)
+                  <span className="inline-flex items-center gap-1 rounded bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-500/30">
+                    <FontAwesomeIcon icon={faStar} className="h-2.5 w-2.5 text-amber-400" />
+                    <span>Acceso Total (Consolidado)</span>
                   </span>
                 ) : (
                   user.permisos.map((p) => (
